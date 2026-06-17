@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>School Management System</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cousine:wght@400;700&display=swap');
+:root{
+  --bg:#f5f5dc;--bg2:#fffef5;--bd:#8b7355;--bd2:#c4a882;
+  --pr:#1a3a6b;--ac:#b8860b;--dg:#8b1a1a;--ok:#1a5c1a;
+  --tx:#1a1a1a;--mu:#5a5a3a;--hbg:#1a3a6b;--htx:#fff;
+  --ra:#f0ead8;--fn:'Cousine','Courier New',monospace;--sw:208px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--fn);font-size:12px;background:var(--bg);color:var(--tx);min-height:100vh;}
+#loginScreen{position:fixed;inset:0;background:linear-gradient(135deg,#1a3a6b 0%,#0d2247 55%,#b8860b 100%);display:flex;align-items:center;justify-content:center;z-index:9999;}
+.lbox{background:var(--bg2);border:3px solid var(--bd);padding:34px 42px;width:380px;box-shadow:8px 8px 0 rgba(0,0,0,.45);}
+.lbox h1{font-size:14px;text-align:center;color:var(--pr);border-bottom:2px solid var(--bd);padding-bottom:10px;margin-bottom:8px;letter-spacing:1px;}
+.lsn{font-size:14px;text-align:center;color:var(--ac);margin-bottom:20px;font-weight:700;}
+.lbox label{display:block;margin-bottom:3px;color:var(--mu);font-size:11px;font-weight:700;}
+.lbox input{width:100%;border:1px solid var(--bd);background:#fff;padding:7px 9px;font-family:var(--fn);font-size:12px;margin-bottom:14px;}
+.lbox input:focus{outline:2px solid var(--ac);}
+#loginErr{color:var(--dg);font-size:11px;margin-top:4px;display:none;font-weight:700;}
+.btn{font-family:var(--fn);font-size:12px;cursor:pointer;border:1px solid;padding:5px 14px;font-weight:700;letter-spacing:.5px;}
+.btn:hover{opacity:.85;}
+.bpr{background:var(--pr);color:#fff;border-color:var(--pr);}
+.bok{background:var(--ok);color:#fff;border-color:var(--ok);}
+.bdg{background:var(--dg);color:#fff;border-color:var(--dg);}
+.bac{background:var(--ac);color:#fff;border-color:var(--ac);}
+.bse{background:#6a6a4a;color:#fff;border-color:#6a6a4a;}
+.bsm{padding:3px 9px;font-size:11px;}
+.bxs{padding:2px 6px;font-size:10px;}
+.blg{padding:9px;font-size:13px;width:100%;}
+#app{display:none;min-height:100vh;}
+.topbar{background:var(--hbg);color:var(--htx);padding:0 16px;height:38px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--ac);position:sticky;top:0;z-index:200;}
+.tbtt{font-size:13px;font-weight:700;letter-spacing:1px;}
+.tbr{display:flex;gap:10px;align-items:center;font-size:11px;}
+.npd{color:#ffd700;font-weight:700;}
+.layout{display:flex;min-height:calc(100vh - 38px);}
+.sidebar{width:var(--sw);background:#0c1e40;border-right:2px solid var(--ac);flex-shrink:0;overflow-y:auto;}
+.sg{border-bottom:1px solid #1a3060;}
+.sgl{font-size:9px;color:#6a8fc0;padding:8px 10px 3px;text-transform:uppercase;letter-spacing:1.5px;}
+.ni{display:block;width:100%;text-align:left;padding:7px 12px;color:#b8cce8;font-family:var(--fn);font-size:11px;cursor:pointer;border:none;background:none;border-left:3px solid transparent;}
+.ni:hover{background:#1a3a6b;color:#fff;}
+.ni.active{background:#1a3a6b;color:#ffd700;border-left-color:#ffd700;font-weight:700;}
+.content{flex:1;padding:14px;overflow-x:auto;}
+.panel{display:none;}.panel.active{display:block;}
+.ph{background:var(--hbg);color:#fff;padding:8px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;border-left:4px solid var(--ac);}
+.ph h2{font-size:13px;letter-spacing:1px;}
+.fr{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+.fg{display:flex;flex-direction:column;min-width:130px;}
+.fg label{font-size:10px;color:var(--mu);margin-bottom:2px;font-weight:700;text-transform:uppercase;}
+.fg input,.fg select,.fg textarea{border:1px solid var(--bd2);background:#fff;padding:4px 7px;font-family:var(--fn);font-size:12px;color:var(--tx);}
+.fg input:focus,.fg select:focus{outline:2px solid var(--ac);}
+.fg.full{flex:1 1 100%;}
+.fsec{border:1px solid var(--bd2);background:var(--bg2);padding:10px 14px;margin-bottom:12px;}
+.fst{font-size:11px;font-weight:700;color:var(--pr);border-bottom:1px solid var(--bd2);margin-bottom:9px;padding-bottom:4px;text-transform:uppercase;letter-spacing:.5px;}
+.tw{overflow-x:auto;border:1px solid var(--bd);}
+table{border-collapse:collapse;width:100%;font-size:11px;}
+th{background:var(--hbg);color:#fff;padding:5px 8px;text-align:left;font-size:10px;border-right:1px solid #2a4a8b;white-space:nowrap;text-transform:uppercase;}
+td{padding:4px 8px;border-bottom:1px solid var(--bd2);border-right:1px solid #e8e0cc;white-space:nowrap;}
+tr:nth-child(even) td{background:var(--ra);}
+tr:hover td{background:#e0d8b8;}
+tfoot td{background:#1a1a0a;color:#fff;font-weight:700;border-top:2px solid var(--ac);}
+.cg{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+.card{background:var(--bg2);border:1px solid var(--bd2);padding:12px 16px;min-width:150px;border-top:3px solid var(--ac);}
+.card .cl{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;}
+.card .cv{font-size:20px;color:var(--pr);font-weight:700;margin-top:3px;}
+.badge{display:inline-block;padding:1px 7px;font-size:10px;border:1px solid;font-weight:700;}
+.bok2{background:#d4edda;color:#155724;border-color:#155724;}
+.berr{background:#fde;color:#6b0000;border-color:#6b0000;}
+.bwrn{background:#fff3cd;color:#856404;border-color:#856404;}
+.binf{background:#cce5ff;color:#004085;border-color:#004085;}
+.sync{position:fixed;bottom:12px;right:14px;padding:5px 12px;font-size:10px;z-index:300;border:1px solid var(--ac);display:none;font-weight:700;}
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:500;align-items:center;justify-content:center;}
+.mo.open{display:flex;}
+.modal{background:var(--bg2);border:2px solid var(--bd);max-width:92vw;max-height:92vh;overflow-y:auto;box-shadow:8px 8px 0 rgba(0,0,0,.4);}
+.mh{background:var(--hbg);color:#fff;padding:9px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--ac);}
+.mh h3{font-size:12px;letter-spacing:.5px;}
+.mc{padding:16px;}
+.mf{padding:10px 16px;border-top:1px solid var(--bd2);display:flex;gap:7px;justify-content:flex-end;}
+.mcl{background:none;border:none;color:#fff;font-size:18px;cursor:pointer;line-height:1;}
+.alert{padding:7px 12px;margin-bottom:10px;font-size:11px;border-left:4px solid;}
+.aok{background:#d4edda;border-color:#155724;color:#155724;}
+.aerr{background:#fde;border-color:#6b0000;color:#6b0000;}
+.ainf{background:#cce5ff;border-color:#004085;color:#004085;}
+.fb{background:var(--bg2);border:1px solid var(--bd2);padding:8px 12px;margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;}
+.tabs{display:flex;border-bottom:2px solid var(--bd);margin-bottom:12px;}
+.tab{padding:5px 14px;cursor:pointer;font-family:var(--fn);font-size:11px;border:1px solid transparent;border-bottom:none;background:none;color:var(--mu);margin-bottom:-2px;font-weight:700;}
+.tab.active{background:var(--bg2);border-color:var(--bd);color:var(--pr);border-bottom-color:var(--bg2);}
+.tp{display:none;}.tp.active{display:block;}
+#ppModal .modal{min-width:min(760px,96vw);}
+.ppwrap{background:#444;padding:18px;overflow-y:auto;max-height:70vh;}
+.ppage{background:#fff;color:#000;margin:0 auto;padding:14mm;max-width:210mm;font-family:'Courier New',monospace;box-shadow:0 2px 14px rgba(0,0,0,.35);}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="lbox">
+    <h1>&#127979; SCHOOL MANAGEMENT SYSTEM</h1>
+    <div class="lsn" id="lsName">Loading...</div>
+    <label>Username</label>
+    <input type="text" id="lUser" placeholder="admin" autocomplete="username">
+    <label>Password</label>
+    <input type="password" id="lPass" placeholder="password" autocomplete="current-password">
+    <div id="loginErr">&#9888; Invalid username or password</div>
+    <br>
+    <button class="btn bpr blg" onclick="doLogin()">&#128275;&nbsp; LOGIN</button>
+    <div style="text-align:center;margin-top:10px;font-size:10px;color:#aaa">Default: admin / admin123</div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="topbar">
+    <div class="tbtt" id="appName">&#127979; SCHOOL MANAGEMENT SYSTEM</div>
+    <div class="tbr">
+      <span class="npd" id="topDate"></span>
+      <span style="color:#446">|</span>
+      <span id="topUser" style="color:#aac"></span>
+      <button class="btn bsm" style="background:#6b0000;color:#fff;border-color:#6b0000" onclick="doLogout()">LOGOUT</button>
+    </div>
+  </div>
+  <div class="layout">
+    <nav class="sidebar">
+      <div class="sg"><div class="sgl">MAIN</div>
+        <button class="ni active" onclick="nav('dashboard')">&#9632; Dashboard</button>
+      </div>
+      <div class="sg"><div class="sgl">STUDENTS</div>
+        <button class="ni" onclick="nav('students')">&#128100; Student List</button>
+        <button class="ni" onclick="nav('classes')">&#127979; Classes</button>
+      </div>
+      <div class="sg"><div class="sgl">FEES</div>
+        <button class="ni" onclick="nav('feeH')">&#128196; Fee Headings</button>
+        <button class="ni" onclick="nav('clsFees')">&#128181; Class Fees</button>
+        <button class="ni" onclick="nav('feeAdj')">&#128260; Fee Adjustment</button>
+        <button class="ni" onclick="nav('billing')">&#128203; Bill Generate</button>
+        <button class="ni" onclick="nav('receipts')">&#128702; Cash Receipts</button>
+        <button class="ni" onclick="nav('ledger')">&#128218; Student Ledger</button>
+      </div>
+      <div class="sg"><div class="sgl">EXAMS</div>
+        <button class="ni" onclick="nav('exams')">&#128221; Exam Management</button>
+        <button class="ni" onclick="nav('marks')">&#9733; Marks Entry</button>
+        <button class="ni" onclick="nav('results')">&#127941; Results</button>
+      </div>
+      <div class="sg"><div class="sgl">REPORTS</div>
+        <button class="ni" onclick="nav('reports')">&#128202; Reports</button>
+      </div>
+      <div class="sg"><div class="sgl">SYSTEM</div>
+        <button class="ni" onclick="nav('backup')">&#9729; Data Backup</button>
+        <button class="ni" onclick="nav('setup')">&#9881; School Setup</button>
+      </div>
+    </nav>
+    <main class="content">
+
+<!-- DASHBOARD -->
+<div id="p-dashboard" class="panel active">
+  <div class="ph"><h2>&#9632; DASHBOARD</h2><span class="npd" id="dashDate" style="font-size:11px"></span></div>
+  <div class="cg" id="dashCards"></div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap">
+    <div style="flex:1;min-width:300px"><div class="fsec"><div class="fst">RECENT RECEIPTS</div>
+      <div class="tw"><table><thead><tr><th>Date (BS)</th><th>Student</th><th>Amount</th><th>Mode</th></tr></thead><tbody id="dashRTbl"></tbody></table></div>
+    </div></div>
+    <div style="min-width:210px"><div class="fsec"><div class="fst">CLASS STRENGTH</div>
+      <div class="tw"><table><thead><tr><th>Class</th><th>Students</th></tr></thead><tbody id="dashCTbl"></tbody></table></div>
+    </div></div>
+  </div>
+</div>
+
+<!-- STUDENTS -->
+<div id="p-students" class="panel">
+  <div class="ph"><h2>&#128100; STUDENT LIST</h2>
+    <div style="display:flex;gap:6px">
+      <button class="btn bpr bsm" onclick="openAddStu()">+ ADD STUDENT</button>
+      <button class="btn bse bsm" onclick="document.getElementById('csvIn').click()">&#128196; IMPORT CSV</button>
+      <button class="btn bac bsm" onclick="printStuList()">&#128424; PRINT LIST</button>
+    </div>
+  </div>
+  <div class="fb">
+    <div class="fg"><label>SEARCH</label><input type="text" id="stuSrch" placeholder="Name/ID..." oninput="renderStudents()"></div>
+    <div class="fg"><label>CLASS</label><select id="stuFC" onchange="renderStudents()"><option value="">All Classes</option></select></div>
+    <div class="fg"><label>STATUS</label><select id="stuFS" onchange="renderStudents()"><option value="">All</option><option>Active</option><option>Inactive</option></select></div>
+    <button class="btn bse bsm" onclick="resetSF()">RESET</button>
+  </div>
+  <input type="file" id="csvIn" accept=".csv" style="display:none" onchange="importCSV(event)">
+  <div class="tw"><table>
+    <thead><tr><th>#</th><th>ID</th><th>Name</th><th>Class</th><th>Roll</th><th>Father</th><th>Phone</th><th>Opening Due</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody id="stuTbl"></tbody>
+  </table></div>
+</div>
+
+<!-- CLASSES -->
+<div id="p-classes" class="panel">
+  <div class="ph"><h2>&#127979; CLASS MANAGEMENT</h2><button class="btn bpr bsm" onclick="resetClsForm()">+ ADD CLASS</button></div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap">
+    <div style="flex:1;min-width:280px"><div class="tw"><table>
+      <thead><tr><th>#</th><th>Class Name</th><th>Section</th><th>Teacher</th><th>Students</th><th>Action</th></tr></thead>
+      <tbody id="clsTbl"></tbody>
+    </table></div></div>
+    <div style="min-width:255px"><div class="fsec">
+      <div class="fst" id="clsFT">ADD CLASS</div>
+      <div class="fg" style="margin-bottom:8px"><label>CLASS NAME *</label><input type="text" id="clsNm" placeholder="e.g. Class 1"></div>
+      <div class="fg" style="margin-bottom:8px"><label>SECTION</label><input type="text" id="clsSc" placeholder="A / B"></div>
+      <div class="fg" style="margin-bottom:8px"><label>CLASS TEACHER</label><input type="text" id="clsTc" placeholder="Teacher Name"></div>
+      <div style="display:flex;gap:6px;margin-top:10px">
+        <button class="btn bok bsm" onclick="saveCls()">SAVE</button>
+        <button class="btn bse bsm" onclick="resetClsForm()">CANCEL</button>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- FEE HEADINGS -->
+<div id="p-feeH" class="panel">
+  <div class="ph"><h2>&#128196; FEE HEADINGS</h2><button class="btn bpr bsm" onclick="resetFHForm()">+ ADD HEADING</button></div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap">
+    <div style="flex:1;min-width:280px"><div class="tw"><table>
+      <thead><tr><th>#</th><th>Heading Name</th><th>Type</th><th>Frequency</th><th>Action</th></tr></thead>
+      <tbody id="fhTbl"></tbody>
+    </table></div></div>
+    <div style="min-width:265px"><div class="fsec">
+      <div class="fst" id="fhFT">ADD FEE HEADING</div>
+      <div class="fg" style="margin-bottom:8px"><label>HEADING NAME *</label><input type="text" id="fhNm" placeholder="e.g. Tuition Fee"></div>
+      <div class="fg" style="margin-bottom:8px"><label>TYPE</label><select id="fhTp"><option>Monthly</option><option>Yearly</option><option>One-time</option></select></div>
+      <div class="fg" style="margin-bottom:8px"><label>FREQUENCY</label><select id="fhFq"><option>Regular</option><option>Optional</option></select></div>
+      <div style="display:flex;gap:6px;margin-top:10px">
+        <button class="btn bok bsm" onclick="saveFH()">SAVE</button>
+        <button class="btn bse bsm" onclick="resetFHForm()">CANCEL</button>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- CLASS FEES -->
+<div id="p-clsFees" class="panel">
+  <div class="ph"><h2>&#128181; CLASS WISE FEES SETTING</h2><button class="btn bpr bsm" onclick="openCFM()">+ SET FEES</button></div>
+  <div class="tw"><table><thead id="cfHd"></thead><tbody id="cfTbl"></tbody></table></div>
+</div>
+
+<!-- FEE ADJUSTMENT -->
+<div id="p-feeAdj" class="panel">
+  <div class="ph"><h2>&#128260; STUDENT WISE FEE ADJUSTMENT</h2><button class="btn bpr bsm" onclick="openAdjM()">+ ADD ADJUSTMENT</button></div>
+  <div class="fb">
+    <div class="fg"><label>STUDENT</label><select id="adjFS" onchange="renderAdj()"><option value="">All Students</option></select></div>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>#</th><th>Student</th><th>Class</th><th>Fee Heading</th><th>Type</th><th>Amount</th><th>Reason</th><th>Action</th></tr></thead>
+    <tbody id="adjTbl"></tbody>
+  </table></div>
+</div>
+
+<!-- BILLING -->
+<div id="p-billing" class="panel">
+  <div class="ph"><h2>&#128203; BILL GENERATE — MONTH WISE</h2>
+    <div style="display:flex;gap:6px">
+      <button class="btn bac bsm" onclick="genAllBills()">&#9889; GENERATE BILLS</button>
+      <button class="btn bpr bsm" onclick="printAllBills()">&#128424; PRINT ALL</button>
+    </div>
+  </div>
+  <div class="fb">
+    <div class="fg"><label>NEPALI MONTH</label>
+      <select id="bMon">
+        <option value="1">Baisakh (1)</option><option value="2">Jestha (2)</option><option value="3">Ashadh (3)</option>
+        <option value="4">Shrawan (4)</option><option value="5">Bhadra (5)</option><option value="6">Ashwin (6)</option>
+        <option value="7">Kartik (7)</option><option value="8">Mangsir (8)</option><option value="9">Poush (9)</option>
+        <option value="10">Magh (10)</option><option value="11">Falgun (11)</option><option value="12">Chaitra (12)</option>
+      </select>
+    </div>
+    <div class="fg"><label>YEAR (BS)</label><input type="number" id="bYr" value="2081" style="width:82px"></div>
+    <div class="fg"><label>CLASS</label><select id="bCls"><option value="">All Classes</option></select></div>
+    <button class="btn bpr bsm" onclick="renderBills()">SHOW BILLS</button>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>#</th><th>Student</th><th>Class</th><th>Month</th><th>Prev.Due</th><th>Curr.Fee</th><th>Total Due</th><th>Paid</th><th>Balance</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody id="billTbl"></tbody>
+  </table></div>
+</div>
+
+<!-- RECEIPTS -->
+<div id="p-receipts" class="panel">
+  <div class="ph"><h2>&#128702; CASH RECEIPTS</h2><button class="btn bpr bsm" onclick="openRcpM()">+ NEW RECEIPT</button></div>
+  <div class="fb">
+    <div class="fg"><label>STUDENT</label><select id="rcpFS" onchange="renderRcps()"><option value="">All</option></select></div>
+    <div class="fg"><label>FROM (BS)</label><input type="text" id="rcpFr" placeholder="2081-01-01" style="width:100px"></div>
+    <div class="fg"><label>TO (BS)</label><input type="text" id="rcpTo" placeholder="2081-12-30" style="width:100px"></div>
+    <button class="btn bse bsm" onclick="renderRcps()">FILTER</button>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>#</th><th>Receipt No.</th><th>Date (BS)</th><th>Student</th><th>Class</th><th>Month (BS)</th><th>Amount</th><th>Discount</th><th>Mode</th><th>Action</th></tr></thead>
+    <tbody id="rcpTbl"></tbody>
+  </table></div>
+</div>
+
+<!-- LEDGER -->
+<div id="p-ledger" class="panel">
+  <div class="ph"><h2>&#128218; STUDENT PERSONAL LEDGER</h2></div>
+  <div class="fb">
+    <div class="fg"><label>SELECT STUDENT *</label><select id="ledStu" onchange="renderLedger()"><option value="">-- Select Student --</option></select></div>
+    <div class="fg"><label>YEAR (BS)</label><input type="number" id="ledYr" value="2081" style="width:82px" onchange="renderLedger()"></div>
+    <button class="btn bac bsm" onclick="printLedger()">&#128424; PRINT LEDGER</button>
+  </div>
+  <div id="ledDiv"></div>
+</div>
+
+<!-- EXAMS -->
+<div id="p-exams" class="panel">
+  <div class="ph"><h2>&#128221; EXAM MANAGEMENT</h2><button class="btn bpr bsm" onclick="openExamM()">+ ADD EXAM</button></div>
+  <div class="tw"><table>
+    <thead><tr><th>#</th><th>Exam Name</th><th>Year (BS)</th><th>Start Date</th><th>End Date</th><th>Class</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody id="examTbl"></tbody>
+  </table></div>
+</div>
+
+<!-- MARKS -->
+<div id="p-marks" class="panel">
+  <div class="ph"><h2>&#9733; MARKS ENTRY</h2><button class="btn bok bsm" onclick="saveAllMarks()">&#128190; SAVE ALL MARKS</button></div>
+  <div class="fb">
+    <div class="fg"><label>EXAM</label><select id="mExam" onchange="loadMrkTbl()"><option value="">-- Select Exam --</option></select></div>
+    <div class="fg"><label>CLASS</label><select id="mCls" onchange="loadMrkTbl()"><option value="">-- Select Class --</option></select></div>
+    <div class="fg"><label>SUBJECT</label><input type="text" id="mSub" placeholder="Maths" style="width:110px"></div>
+    <div class="fg"><label>FULL MARKS</label><input type="number" id="mFull" value="100" style="width:68px"></div>
+    <div class="fg"><label>PASS MARKS</label><input type="number" id="mPass" value="40" style="width:68px"></div>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>#</th><th>Roll</th><th>Student Name</th><th>Obtained</th><th>Grade</th><th>Remarks</th></tr></thead>
+    <tbody id="mrkTbl"></tbody>
+  </table></div>
+</div>
+
+<!-- RESULTS -->
+<div id="p-results" class="panel">
+  <div class="ph"><h2>&#127941; EXAM RESULTS</h2><button class="btn bac bsm" onclick="printResults()">&#128424; PRINT</button></div>
+  <div class="fb">
+    <div class="fg"><label>EXAM</label><select id="rExam" onchange="renderResults()"><option value="">-- Select Exam --</option></select></div>
+    <div class="fg"><label>CLASS</label><select id="rCls" onchange="renderResults()"><option value="">-- Select Class --</option></select></div>
+  </div>
+  <div id="resDiv"></div>
+</div>
+
+<!-- REPORTS -->
+<div id="p-reports" class="panel">
+  <div class="ph"><h2>&#128202; REPORTS</h2></div>
+  <div class="tabs">
+    <button class="tab active" onclick="stab('rpt','sum')">FEE SUMMARY</button>
+    <button class="tab" onclick="stab('rpt','def')">DEFAULTERS</button>
+    <button class="tab" onclick="stab('rpt','col')">COLLECTION</button>
+  </div>
+  <div id="rpt-sum" class="tp active">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:flex-end">
+      <div class="fg"><label>YEAR (BS)</label><input type="number" id="rpYr" value="2081" style="width:82px"></div>
+      <div class="fg"><label>CLASS</label><select id="rpCls"><option value="">All</option></select></div>
+      <button class="btn bpr bsm" onclick="renderFeeRpt()">SHOW</button>
+      <button class="btn bac bsm" onclick="showPP('FEE SUMMARY REPORT',document.getElementById('fRptD').innerHTML)">&#128424; PRINT</button>
+    </div>
+    <div id="fRptD"></div>
+  </div>
+  <div id="rpt-def" class="tp">
+    <div style="margin-bottom:10px;display:flex;gap:8px">
+      <button class="btn bpr bsm" onclick="renderDefaulters()">SHOW DEFAULTERS</button>
+      <button class="btn bac bsm" onclick="showPP('DEFAULTER LIST',document.getElementById('defD').innerHTML)">&#128424; PRINT</button>
+    </div>
+    <div id="defD"></div>
+  </div>
+  <div id="rpt-col" class="tp">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:flex-end">
+      <div class="fg"><label>MONTH</label>
+        <select id="rpMon"><option value="1">Baisakh</option><option value="2">Jestha</option><option value="3">Ashadh</option><option value="4">Shrawan</option><option value="5">Bhadra</option><option value="6">Ashwin</option><option value="7">Kartik</option><option value="8">Mangsir</option><option value="9">Poush</option><option value="10">Magh</option><option value="11">Falgun</option><option value="12">Chaitra</option></select>
+      </div>
+      <div class="fg"><label>YEAR (BS)</label><input type="number" id="rpCYr" value="2081" style="width:82px"></div>
+      <button class="btn bpr bsm" onclick="renderColRpt()">SHOW</button>
+    </div>
+    <div id="colD"></div>
+  </div>
+</div>
+
+<!-- BACKUP -->
+<div id="p-backup" class="panel">
+  <div class="ph"><h2>&#9729; DATA BACKUP — GOOGLE SHEETS</h2></div>
+  <div class="fsec"><div class="fst">GOOGLE APPS SCRIPT WEB APP URL</div>
+    <div class="fg full" style="margin-bottom:10px">
+      <label>WEB APP URL (Deploy as Web App from Google Apps Script)</label>
+      <input type="url" id="gsUrl" placeholder="https://script.google.com/macros/s/YOUR_ID/exec" style="width:100%">
+    </div>
+    <div style="display:flex;gap:7px">
+      <button class="btn bpr bsm" onclick="saveGsUrl()">SAVE URL</button>
+      <button class="btn bok bsm" onclick="testGS()">TEST CONNECTION</button>
+    </div>
+    <div id="gsTR" style="margin-top:8px"></div>
+  </div>
+  <div class="fsec" style="background:#e8f5e9;border-color:var(--ok)"><div class="fst" style="color:var(--ok)">AUTO-SAVE (LIVE SYNC)</div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <label style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;cursor:pointer">
+        <input type="checkbox" id="autoSaveChk" onchange="toggleAutoSave()" style="width:16px;height:16px;cursor:pointer">
+        ENABLE AUTO-SAVE EVERY 15 SECONDS
+      </label>
+      <span id="autoSaveStatus" class="badge bwrn">OFF</span>
+    </div>
+    <div style="font-size:9.5pt;color:#388e3c;margin-top:6px">When enabled, all data (students, bills, receipts, marks, etc.) is automatically sent to your Google Sheet every 15 seconds, in the background, with no need to click "Backup" manually. The sheet auto-creates its own tabs on first connection.</div>
+    <div id="autoSaveLastSync" style="font-size:9.5pt;color:var(--mu);margin-top:4px"></div>
+  </div>
+  <div class="fsec"><div class="fst">BACKUP / RESTORE (MANUAL)</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn bac bsm" onclick="backupGS()">&#9729; BACKUP NOW</button>
+      <button class="btn bse bsm" onclick="exportJSON()">&#128190; EXPORT JSON</button>
+      <button class="btn bse bsm" onclick="document.getElementById('restIn').click()">&#8679; RESTORE FROM JSON</button>
+      <input type="file" id="restIn" accept=".json" style="display:none" onchange="restoreJSON(event)">
+    </div>
+    <div id="bkSt" style="margin-top:10px"></div>
+  </div>
+  <div class="fsec"><div class="fst">BACKUP LOG</div>
+    <div class="tw"><table><thead><tr><th>Date/Time</th><th>Type</th><th>Records</th><th>Status</th></tr></thead><tbody id="bkLog"></tbody></table></div>
+  </div>
+</div>
+
+<!-- SETUP -->
+<div id="p-setup" class="panel">
+  <div class="ph"><h2>&#9881; SCHOOL SETUP</h2></div>
+  <div style="display:flex;gap:12px;flex-wrap:wrap">
+    <div style="flex:1;min-width:300px">
+      <div class="fsec"><div class="fst">SCHOOL INFORMATION</div>
+        <div class="fr">
+          <div class="fg full"><label>SCHOOL NAME *</label><input type="text" id="stNm" placeholder="School Name"></div>
+          <div class="fg full"><label>ADDRESS</label><input type="text" id="stAd" placeholder="Address"></div>
+          <div class="fg"><label>DISTRICT</label><input type="text" id="stDi"></div>
+          <div class="fg"><label>PROVINCE</label><input type="text" id="stPv"></div>
+          <div class="fg"><label>PHONE</label><input type="text" id="stPh"></div>
+          <div class="fg"><label>EMAIL</label><input type="email" id="stEm"></div>
+          <div class="fg"><label>REG. NO.</label><input type="text" id="stRg"></div>
+          <div class="fg"><label>PAN NO.</label><input type="text" id="stPn"></div>
+          <div class="fg"><label>CURRENT YEAR (BS)</label><input type="number" id="stYr" value="2081"></div>
+          <div class="fg"><label>PRINCIPAL</label><input type="text" id="stPr"></div>
+        </div>
+      </div>
+      <div class="fsec"><div class="fst">LOGIN CREDENTIALS</div>
+        <div class="fr">
+          <div class="fg"><label>USERNAME</label><input type="text" id="stUn"></div>
+          <div class="fg"><label>NEW PASSWORD</label><input type="password" id="stPw" placeholder="Leave blank to keep"></div>
+        </div>
+      </div>
+      <div class="fsec"><div class="fst">NUMBER PREFIXES</div>
+        <div class="fr">
+          <div class="fg"><label>RECEIPT PREFIX</label><input type="text" id="stRP" value="RCP"></div>
+          <div class="fg"><label>BILL PREFIX</label><input type="text" id="stBP" value="BILL"></div>
+          <div class="fg"><label>STUDENT ID PREFIX</label><input type="text" id="stSP" value="STU"></div>
+        </div>
+      </div>
+      <button class="btn bok" onclick="saveSetup()">&#128190; SAVE ALL SETTINGS</button>
+    </div>
+    <div style="min-width:230px">
+      <div class="fsec"><div class="fst">SUBJECTS</div>
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <input type="text" id="newSub" placeholder="Subject name" style="flex:1;border:1px solid var(--bd2);padding:4px 6px;font-family:var(--fn);font-size:12px">
+          <button class="btn bpr bsm" onclick="addSub()">ADD</button>
+        </div>
+        <div id="subList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    </main>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="mo" id="mStu">
+  <div class="modal" style="min-width:min(580px,95vw)">
+    <div class="mh"><h3 id="stuMT">ADD STUDENT</h3><button class="mcl" onclick="closeM('mStu')">&#x2715;</button></div>
+    <div class="mc">
+      <div class="fr">
+        <div class="fg"><label>FIRST NAME *</label><input type="text" id="sFn"></div>
+        <div class="fg"><label>MIDDLE NAME</label><input type="text" id="sMn"></div>
+        <div class="fg"><label>LAST NAME *</label><input type="text" id="sLn"></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label>STUDENT ID</label><input type="text" id="sId"></div>
+        <div class="fg"><label>ROLL NO.</label><input type="number" id="sRo"></div>
+        <div class="fg"><label>CLASS *</label><select id="sCl"></select></div>
+        <div class="fg"><label>GENDER</label><select id="sGn"><option>Male</option><option>Female</option><option>Other</option></select></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label>DOB (BS) yyyy-mm-dd</label><input type="text" id="sDb" placeholder="2060-01-15"></div>
+        <div class="fg"><label>ADMISSION DATE (BS)</label><input type="text" id="sAd" placeholder="2081-01-01"></div>
+        <div class="fg"><label>STATUS</label><select id="sSt"><option>Active</option><option>Inactive</option></select></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label>FATHER'S NAME</label><input type="text" id="sFt"></div>
+        <div class="fg"><label>MOTHER'S NAME</label><input type="text" id="sMt"></div>
+        <div class="fg"><label>PHONE</label><input type="text" id="sPh"></div>
+      </div>
+      <div class="fr">
+        <div class="fg full"><label>ADDRESS</label><input type="text" id="sAr"></div>
+        <div class="fg full"><label>REMARKS</label><input type="text" id="sRm"></div>
+      </div>
+      <div class="fsec" style="background:#fff3cd;border-color:#b8860b;margin-top:6px;margin-bottom:0">
+        <div class="fst" style="color:#856404">PREVIOUS YEAR DUES (OPENING BALANCE)</div>
+        <div class="fr" style="margin-bottom:0">
+          <div class="fg"><label>DUE AMOUNT (Rs.)</label><input type="number" id="sOpd" placeholder="0" min="0"></div>
+          <div class="fg"><label>RELATED YEAR (BS)</label><input type="text" id="sOpdYr" placeholder="e.g. 2080"></div>
+          <div class="fg full"><label>REMARKS / NOTE</label><input type="text" id="sOpdRm" placeholder="e.g. Carried from previous school / last year balance"></div>
+        </div>
+        <div style="font-size:9.5pt;color:#856404;margin-top:4px">This amount will automatically be added as an outstanding due on the student's ledger and included in bills/receipts.</div>
+      </div>
+      <input type="hidden" id="sIx" value="-1">
+    </div>
+    <div class="mf"><button class="btn bok" onclick="saveStu()">SAVE STUDENT</button><button class="btn bse" onclick="closeM('mStu')">CANCEL</button></div>
+  </div>
+</div>
+
+<div class="mo" id="mCF">
+  <div class="modal" style="min-width:min(480px,95vw)">
+    <div class="mh"><h3>CLASS WISE FEE SETTING</h3><button class="mcl" onclick="closeM('mCF')">&#x2715;</button></div>
+    <div class="mc">
+      <div class="fr">
+        <div class="fg"><label>CLASS *</label><select id="cfCl" onchange="buildCFH()"></select></div>
+        <div class="fg"><label>YEAR (BS)</label><input type="number" id="cfYr" value="2081" onchange="buildCFH()"></div>
+      </div>
+      <div id="cfHD"></div>
+    </div>
+    <div class="mf"><button class="btn bok" onclick="saveCF()">SAVE FEES</button><button class="btn bse" onclick="closeM('mCF')">CANCEL</button></div>
+  </div>
+</div>
+
+<div class="mo" id="mAdj">
+  <div class="modal" style="min-width:min(420px,95vw)">
+    <div class="mh"><h3>FEE ADJUSTMENT</h3><button class="mcl" onclick="closeM('mAdj')">&#x2715;</button></div>
+    <div class="mc">
+      <div class="fr"><div class="fg full"><label>STUDENT *</label><select id="adjS"></select></div></div>
+      <div class="fr">
+        <div class="fg"><label>FEE HEADING *</label><select id="adjH"></select></div>
+        <div class="fg"><label>TYPE</label><select id="adjT"><option value="discount">Discount</option><option value="waiver">Waiver</option><option value="surcharge">Surcharge</option></select></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label>AMOUNT (Rs.)</label><input type="number" id="adjA"></div>
+        <div class="fg full"><label>REASON</label><input type="text" id="adjR" placeholder="Scholarship, concession..."></div>
+      </div>
+      <input type="hidden" id="adjIx" value="-1">
+    </div>
+    <div class="mf"><button class="btn bok" onclick="saveAdj()">SAVE</button><button class="btn bse" onclick="closeM('mAdj')">CANCEL</button></div>
+  </div>
+</div>
+
+<div class="mo" id="mRcp">
+  <div class="modal" style="min-width:min(440px,95vw)">
+    <div class="mh"><h3>NEW CASH RECEIPT</h3><button class="mcl" onclick="closeM('mRcp')">&#x2715;</button></div>
+    <div class="mc">
+      <div class="fr"><div class="fg full"><label>STUDENT *</label><select id="rcpS" onchange="loadStuDue()"></select></div></div>
+      <div class="fr">
+        <div class="fg"><label>MONTH (BS)</label>
+          <select id="rcpM" onchange="loadStuDue()">
+            <option value="1">Baisakh</option><option value="2">Jestha</option><option value="3">Ashadh</option><option value="4">Shrawan</option><option value="5">Bhadra</option><option value="6">Ashwin</option><option value="7">Kartik</option><option value="8">Mangsir</option><option value="9">Poush</option><option value="10">Magh</option><option value="11">Falgun</option><option value="12">Chaitra</option>
+          </select>
+        </div>
+        <div class="fg"><label>YEAR (BS)</label><input type="number" id="rcpY" value="2081" style="width:80px" onchange="loadStuDue()"></div>
+      </div>
+      <div style="background:#f0ead8;border:1px solid var(--bd2);padding:9px 12px;margin:8px 0;font-size:11px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span>Previous Month Due:</span><strong id="rpPrev">Rs. 0</strong></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span>Current Month Bill:</span><strong id="rpCurr">Rs. 0</strong></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px;color:var(--ac)"><span>Discount Applied:</span><strong id="rpDiscDisp">Rs. 0</strong></div>
+        <div style="display:flex;justify-content:space-between;border-top:1px dashed var(--bd);padding-top:5px"><span>TOTAL PAYABLE:</span><strong id="rpTot" style="color:var(--dg);font-size:13px">Rs. 0</strong></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label>DISCOUNT (Rs.)</label><input type="number" id="rcpDisc" placeholder="0" min="0" oninput="loadStuDue()"></div>
+        <div class="fg full"><label>DISCOUNT REASON</label><input type="text" id="rcpDiscR" placeholder="e.g. Sibling discount, scholarship..."></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label>AMOUNT RECEIVED *</label><input type="number" id="rcpA" placeholder="0" oninput="calcBal()"></div>
+        <div class="fg"><label>BALANCE</label><input type="number" id="rcpBl" readonly style="background:#f5f5dc"></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label>PAYMENT MODE</label><select id="rcpMd"><option>Cash</option><option>Cheque</option><option>Online Transfer</option><option>Fonepay</option><option>eSewa</option></select></div>
+        <div class="fg"><label>DATE (BS)</label><input type="text" id="rcpD" placeholder="2081-01-15"></div>
+      </div>
+      <div class="fg full"><label>REMARKS</label><input type="text" id="rcpR" placeholder="Optional"></div>
+      <input type="hidden" id="rcpIx" value="-1">
+    </div>
+    <div class="mf">
+      <button class="btn bok" onclick="saveRcp(true)">SAVE &amp; PRINT (2 COPIES)</button>
+      <button class="btn bse bsm" onclick="saveRcp(false)">SAVE ONLY</button>
+      <button class="btn bse" onclick="closeM('mRcp')">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<div class="mo" id="mExam">
+  <div class="modal" style="min-width:min(440px,95vw)">
+    <div class="mh"><h3 id="examMT">ADD EXAM</h3><button class="mcl" onclick="closeM('mExam')">&#x2715;</button></div>
+    <div class="mc">
+      <div class="fr"><div class="fg full"><label>EXAM NAME *</label><input type="text" id="exNm" placeholder="e.g. First Terminal Examination"></div></div>
+      <div class="fr">
+        <div class="fg"><label>YEAR (BS)</label><input type="number" id="exYr" value="2081"></div>
+        <div class="fg"><label>START DATE (BS)</label><input type="text" id="exSt" placeholder="2081-06-01"></div>
+        <div class="fg"><label>END DATE (BS)</label><input type="text" id="exEn" placeholder="2081-06-15"></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label>CLASS</label><select id="exCl"><option value="">All Classes</option></select></div>
+        <div class="fg"><label>STATUS</label><select id="exSs"><option>Upcoming</option><option>Ongoing</option><option>Completed</option></select></div>
+      </div>
+      <input type="hidden" id="exIx" value="-1">
+    </div>
+    <div class="mf"><button class="btn bok" onclick="saveExam()">SAVE</button><button class="btn bse" onclick="closeM('mExam')">CANCEL</button></div>
+  </div>
+</div>
+
+<div class="mo" id="ppModal">
+  <div class="modal" style="min-width:min(760px,96vw)">
+    <div class="mh"><h3 id="ppTit">&#128424; PRINT PREVIEW</h3><button class="mcl" onclick="closeM('ppModal')">&#x2715;</button></div>
+    <div class="ppwrap"><div class="ppage" id="ppCont"></div></div>
+    <div class="mf">
+      <button class="btn bpr" onclick="doPrint()">&#128424;&nbsp; PRINT NOW</button>
+      <button class="btn bse" onclick="closeM('ppModal')">CLOSE</button>
+    </div>
+  </div>
+</div>
+
+<div class="sync" id="syncT"></div>
+
+<script>
+// =====================================================
+// NEPALI DATE ENGINE — Accurate BS calendar 2075-2092
+// =====================================================
+const NM=['Baisakh','Jestha','Ashadh','Shrawan','Bhadra','Ashwin','Kartik','Mangsir','Poush','Magh','Falgun','Chaitra'];
+const BC={
+  2075:[31,31,32,32,31,30,30,29,30,29,30,30],
+  2076:[31,32,31,32,31,30,30,29,30,29,30,30],
+  2077:[31,32,31,32,31,30,30,30,29,29,30,31],
+  2078:[31,31,31,32,31,31,30,29,30,29,30,30],
+  2079:[31,31,32,31,31,31,30,29,30,29,30,30],
+  2080:[31,31,32,32,31,30,30,29,30,29,30,30],
+  2081:[31,31,31,32,31,31,30,29,30,29,30,30],
+  2082:[31,32,31,32,31,30,30,29,30,29,30,30],
+  2083:[31,32,31,32,31,30,30,30,29,29,30,31],
+  2084:[31,31,31,32,31,31,30,29,30,29,30,30],
+  2085:[31,31,32,31,31,31,30,29,30,29,30,30],
+  2086:[31,32,31,31,31,31,30,30,29,30,29,31],
+  2087:[30,32,31,32,31,30,30,30,29,29,30,30],
+  2088:[31,31,32,32,31,30,30,29,30,29,30,30],
+  2089:[31,32,31,32,31,30,30,29,30,29,30,30],
+  2090:[31,32,31,32,31,30,30,30,29,29,30,31],
+  2091:[31,31,31,32,31,31,30,29,30,29,30,30],
+  2092:[31,31,32,31,31,31,30,29,30,29,30,30]
+};
+// Reference anchor: 2081 Baisakh 1 = April 13, 2024
+const REF_AD=new Date(2024,3,13);
+const REF_BS={y:2081,m:1,d:1};
+function adToBS(ad){
+  const diff=Math.round((ad-REF_AD)/86400000);
+  let y=REF_BS.y,m=REF_BS.m,d=REF_BS.d;
+  if(diff>=0){let r=diff;while(r>0){const md=(BC[y]||BC[2081])[m-1];const left=md-d+1;if(r<left){d+=r;r=0;}else{r-=left;d=1;m++;if(m>12){m=1;y++;}}}}
+  else{let r=-diff;while(r>0){d--;r--;if(d<1){m--;if(m<1){m=12;y--;}d=(BC[y]||BC[2081])[m-1];}}}
+  return{y,m,d};
+}
+function todayBS(){const b=adToBS(new Date());return`${b.y}-${String(b.m).padStart(2,'0')}-${String(b.d).padStart(2,'0')}`;}
+function fmtBS(s){if(!s)return'';const[y,m,d]=s.split('-');return`${parseInt(d)} ${NM[parseInt(m)-1]||''} ${y}`;}
+function mname(m){return NM[parseInt(m)-1]||'';}
+function n2w(n){const a=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];const b=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];if(!n||n===0)return'Zero Only';n=Math.floor(n);if(n<20)return a[n]+' Only';if(n<100)return b[Math.floor(n/10)]+(n%10?' '+a[n%10]:'')+' Only';if(n<1000)return a[Math.floor(n/100)]+' Hundred'+(n%100?' and '+n2w(n%100).replace(' Only',''):'')+' Only';if(n<100000)return n2w(Math.floor(n/1000)).replace(' Only','')+' Thousand'+(n%1000?' '+n2w(n%1000).replace(' Only',''):'')+' Only';if(n<10000000)return n2w(Math.floor(n/100000)).replace(' Only','')+' Lakh'+(n%100000?' '+n2w(n%100000).replace(' Only',''):'')+' Only';return n+' Only';}
+
+// =====================================================
+// DATA STORE
+// =====================================================
+const LS={g(k){try{return JSON.parse(localStorage.getItem('sms3_'+k))||null;}catch{return null;}},s(k,v){localStorage.setItem('sms3_'+k,JSON.stringify(v));}};
+const D={
+  cfg:LS.g('cfg')||{name:'Vidhya Vikash Secondary Boarding School',addr:'Kathmandu, Bagmati Province, Nepal',dist:'Kathmandu',prov:'Bagmati Province',phone:'01-4XXXXXX',email:'info@school.edu.np',reg:'REG-2045/001',pan:'123456789',principal:'',year:2081,uname:'admin',pwd:'admin123',rcpPfx:'RCP',billPfx:'BILL',stuPfx:'STU',gsUrl:''},
+  stu:LS.g('stu')||[],cls:LS.g('cls')||[],feeH:LS.g('feeH')||[],cFees:LS.g('cFees')||[],adjs:LS.g('adjs')||[],bills:LS.g('bills')||[],rcps:LS.g('rcps')||[],exams:LS.g('exams')||[],marks:LS.g('marks')||[],bkLog:LS.g('bkLog')||[],subs:LS.g('subs')||['Nepali','English','Mathematics','Science','Social Studies','Computer']
+};
+function sv(k){LS.s(k,D[k]);}
+
+// =====================================================
+// LOGIN
+// =====================================================
+function doLogin(){
+  const u=document.getElementById('lUser').value.trim(),p=document.getElementById('lPass').value;
+  if(u===D.cfg.uname&&p===D.cfg.pwd){document.getElementById('loginScreen').style.display='none';document.getElementById('app').style.display='block';document.getElementById('topUser').textContent=u;initApp();}
+  else{const e=document.getElementById('loginErr');e.style.display='block';setTimeout(()=>e.style.display='none',3000);}
+}
+document.getElementById('lPass').addEventListener('keypress',e=>{if(e.key==='Enter')doLogin();});
+function doLogout(){if(!confirm('Logout?'))return;stopAutoSave();document.getElementById('loginScreen').style.display='flex';document.getElementById('app').style.display='none';document.getElementById('lPass').value='';}
+
+// =====================================================
+// INIT
+// =====================================================
+function initApp(){
+  const b=adToBS(new Date());
+  document.getElementById('topDate').textContent=`${b.d} ${NM[b.m-1]} ${b.y} BS`;
+  document.getElementById('dashDate').textContent=`Today: ${b.d} ${NM[b.m-1]} ${b.y} BS`;
+  applyCfg();fillDDs();renderDashboard();initAutoSaveUI();
+  document.getElementById('bMon').value=String(b.m);
+  document.getElementById('bYr').value=String(b.y);
+  document.getElementById('rcpY').value=String(b.y);
+  document.getElementById('rcpM').value=String(b.m);
+  document.getElementById('rcpD').value=todayBS();
+}
+function applyCfg(){
+  document.getElementById('appName').textContent='🏫 '+D.cfg.name;
+  document.getElementById('lsName').textContent=D.cfg.name;
+  const m={stNm:'name',stAd:'addr',stDi:'dist',stPv:'prov',stPh:'phone',stEm:'email',stRg:'reg',stPn:'pan',stYr:'year',stPr:'principal',stUn:'uname',stRP:'rcpPfx',stBP:'billPfx',stSP:'stuPfx'};
+  Object.entries(m).forEach(([id,k])=>{const el=document.getElementById(id);if(el)el.value=D.cfg[k]||'';});
+  document.getElementById('gsUrl').value=D.cfg.gsUrl||'';
+  renderSubs();
+}
+
+// =====================================================
+// NAVIGATION
+// =====================================================
+function nav(nm){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(b=>b.classList.remove('active'));
+  document.getElementById('p-'+nm).classList.add('active');
+  const b=Array.from(document.querySelectorAll('.ni')).find(x=>x.getAttribute('onclick')?.includes("'"+nm+"'"));
+  if(b)b.classList.add('active');
+  fillDDs();
+  const r={dashboard:renderDashboard,students:renderStudents,classes:renderCls,feeH:renderFH,clsFees:renderCF,feeAdj:renderAdj,billing:renderBills,receipts:renderRcps,exams:renderExams,backup:()=>{renderBkLog();initAutoSaveUI();},setup:applyCfg};
+  if(r[nm])r[nm]();
+}
+function stab(g,t){
+  document.querySelectorAll(`[id^="${g}-"]`).forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b=>{b.classList.toggle('active',b.getAttribute('onclick')?.includes(`'${t}'`));});
+  document.getElementById(`${g}-${t}`).classList.add('active');
+}
+function openM(id){document.getElementById(id).classList.add('open');}
+function closeM(id){document.getElementById(id).classList.remove('open');}
+
+// =====================================================
+// DROPDOWNS
+// =====================================================
+function fillDDs(){
+  ['stuFC','sCl','bCls','cfCl','rpCls','mCls','rCls','exCl'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;const v=el.value;
+    el.innerHTML=['stuFC','bCls','rpCls','exCl'].includes(id)?'<option value="">All Classes</option>':'';
+    D.cls.forEach(c=>el.innerHTML+=`<option value="${c.id}">${c.n}${c.s?' '+c.s:''}</option>`);
+    el.value=v;
+  });
+  ['adjFS','adjS','rcpFS','rcpS','ledStu'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;const v=el.value;
+    el.innerHTML=['adjFS','rcpFS','ledStu'].includes(id)?'<option value="">-- Select --</option>':'<option value="">-- Select Student --</option>';
+    D.stu.filter(s=>s.st==='Active').forEach(s=>{const c=D.cls.find(x=>x.id===s.ci);el.innerHTML+=`<option value="${s.id}">${s.nm} (${c?c.n+(c.s?' '+c.s:''):''})</option>`;});
+    el.value=v;
+  });
+  const ah=document.getElementById('adjH');if(ah){ah.innerHTML='';D.feeH.forEach(h=>ah.innerHTML+=`<option value="${h.id}">${h.n}</option>`);}
+  ['mExam','rExam'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const v=el.value;el.innerHTML='<option value="">-- Select Exam --</option>';D.exams.forEach(e=>el.innerHTML+=`<option value="${e.id}">${e.n} (${e.y} BS)</option>`);el.value=v;});
+}
+
+// =====================================================
+// DASHBOARD
+// =====================================================
+function renderDashboard(){
+  const act=D.stu.filter(s=>s.st==='Active').length;
+  const totPaid=D.rcps.reduce((a,r)=>a+(+r.a),0);
+  const totDue=D.stu.filter(s=>s.st==='Active').reduce((a,s)=>a+Math.max(0,getStuBal(s.id)),0);
+  document.getElementById('dashCards').innerHTML=`
+    <div class="card"><div class="cl">ACTIVE STUDENTS</div><div class="cv">${act}</div></div>
+    <div class="card"><div class="cl">TOTAL CLASSES</div><div class="cv">${D.cls.length}</div></div>
+    <div class="card"><div class="cl">TOTAL COLLECTION</div><div class="cv" style="font-size:16px">Rs.${totPaid.toLocaleString()}</div></div>
+    <div class="card"><div class="cl">PENDING DUES</div><div class="cv" style="color:var(--dg);font-size:16px">Rs.${totDue.toLocaleString()}</div></div>`;
+  document.getElementById('dashRTbl').innerHTML=D.rcps.slice(-8).reverse().map(r=>{const s=D.stu.find(x=>x.id===r.si);return`<tr><td>${r.dt}</td><td>${s?.nm||''}</td><td>Rs.${(+r.a).toLocaleString()}</td><td>${r.md}</td></tr>`;}).join('')||`<tr><td colspan="4" style="text-align:center;color:var(--mu)">No receipts yet</td></tr>`;
+  document.getElementById('dashCTbl').innerHTML=D.cls.map(c=>`<tr><td>${c.n}${c.s?' '+c.s:''}</td><td>${D.stu.filter(s=>s.ci===c.id&&s.st==='Active').length}</td></tr>`).join('')||`<tr><td colspan="2" style="text-align:center;color:var(--mu)">No classes</td></tr>`;
+}
+function getStuBal(id){
+  const s=D.stu.find(x=>x.id===id);
+  const opd=s?(+s.opd||0):0;
+  return opd+D.bills.filter(b=>b.si===id).reduce((a,b)=>a+(+b.tot),0)-D.rcps.filter(r=>r.si===id).reduce((a,r)=>a+(+r.a),0);
+}
+
+// =====================================================
+// STUDENTS
+// =====================================================
+let _si=-1;
+function openAddStu(){_si=-1;document.getElementById('stuMT').textContent='ADD STUDENT';['sFn','sMn','sLn','sRo','sFt','sMt','sPh','sAr','sDb','sRm','sOpd','sOpdYr','sOpdRm'].forEach(id=>document.getElementById(id).value='');document.getElementById('sId').value=genSId();document.getElementById('sAd').value=todayBS();document.getElementById('sSt').value='Active';document.getElementById('sIx').value=-1;fillDDs();openM('mStu');}
+function genSId(){return`${D.cfg.stuPfx||'STU'}-${String(D.stu.length+1).padStart(4,'0')}`;}
+function saveStu(){
+  const fn=document.getElementById('sFn').value.trim(),ln=document.getElementById('sLn').value.trim();
+  if(!fn||!ln){toast('First and Last name required','err');return;}
+  const ix=parseInt(document.getElementById('sIx').value);
+  const s={id:document.getElementById('sId').value||genSId(),nm:[fn,document.getElementById('sMn').value.trim(),ln].filter(Boolean).join(' '),fn,mn:document.getElementById('sMn').value.trim(),ln,ro:document.getElementById('sRo').value,ci:document.getElementById('sCl').value,db:document.getElementById('sDb').value,gn:document.getElementById('sGn').value,ad:document.getElementById('sAd').value,ft:document.getElementById('sFt').value,mt:document.getElementById('sMt').value,ph:document.getElementById('sPh').value,ar:document.getElementById('sAr').value,st:document.getElementById('sSt').value,rm:document.getElementById('sRm').value,opd:parseFloat(document.getElementById('sOpd').value)||0,opdYr:document.getElementById('sOpdYr').value,opdRm:document.getElementById('sOpdRm').value};
+  if(ix>=0)D.stu[ix]=s;else D.stu.push(s);sv('stu');closeM('mStu');renderStudents();renderDashboard();toast('Student saved');
+}
+function renderStudents(){
+  const sr=(document.getElementById('stuSrch')?.value||'').toLowerCase(),cf=document.getElementById('stuFC')?.value||'',sf=document.getElementById('stuFS')?.value||'';
+  const list=D.stu.filter(s=>(!sr||s.nm.toLowerCase().includes(sr)||s.id.toLowerCase().includes(sr))&&(!cf||s.ci===cf)&&(!sf||s.st===sf));
+  document.getElementById('stuTbl').innerHTML=list.map((s,i)=>{const c=D.cls.find(x=>x.id===s.ci);return`<tr><td>${i+1}</td><td>${s.id}</td><td><strong>${s.nm}</strong></td><td>${c?c.n+(c.s?' '+c.s:''):'-'}</td><td>${s.ro||'-'}</td><td>${s.ft||'-'}</td><td>${s.ph||'-'}</td><td>${(+s.opd||0)>0?`<span class="badge bwrn">Rs.${(+s.opd).toLocaleString()}</span>`:'-'}</td><td><span class="badge ${s.st==='Active'?'bok2':'berr'}">${s.st}</span></td><td><button class="btn bxs bse" onclick="editStu(${D.stu.indexOf(s)})">EDIT</button> <button class="btn bxs bdg" onclick="delStu(${D.stu.indexOf(s)})">DEL</button></td></tr>`;}).join('')||`<tr><td colspan="10" style="text-align:center;color:var(--mu);padding:12px">No students found</td></tr>`;
+}
+function editStu(ix){const s=D.stu[ix];document.getElementById('stuMT').textContent='EDIT STUDENT';document.getElementById('sIx').value=ix;document.getElementById('sId').value=s.id;document.getElementById('sFn').value=s.fn||s.nm.split(' ')[0];document.getElementById('sMn').value=s.mn||'';document.getElementById('sLn').value=s.ln||s.nm.split(' ').slice(-1)[0];document.getElementById('sRo').value=s.ro||'';document.getElementById('sCl').value=s.ci||'';document.getElementById('sDb').value=s.db||'';document.getElementById('sGn').value=s.gn||'Male';document.getElementById('sAd').value=s.ad||'';document.getElementById('sFt').value=s.ft||'';document.getElementById('sMt').value=s.mt||'';document.getElementById('sPh').value=s.ph||'';document.getElementById('sAr').value=s.ar||'';document.getElementById('sSt').value=s.st||'Active';document.getElementById('sRm').value=s.rm||'';document.getElementById('sOpd').value=s.opd||'';document.getElementById('sOpdYr').value=s.opdYr||'';document.getElementById('sOpdRm').value=s.opdRm||'';openM('mStu');}
+function delStu(ix){if(!confirm('Delete student?'))return;D.stu.splice(ix,1);sv('stu');renderStudents();renderDashboard();}
+function resetSF(){['stuSrch','stuFC','stuFS'].forEach(id=>document.getElementById(id).value='');renderStudents();}
+function importCSV(e){
+  const f=e.target.files[0];if(!f)return;
+  if(!f.name.endsWith('.csv')){alert('Use CSV format. Export as CSV from Excel first.');e.target.value='';return;}
+  const r=new FileReader();r.onload=ev=>{
+    const lines=ev.target.result.split('\n').filter(Boolean);const hdr=lines[0].split(',').map(h=>h.trim().toLowerCase().replace(/"/g,''));let add=0;
+    for(let i=1;i<lines.length;i++){const cols=lines[i].split(',').map(c=>c.trim().replace(/^"|"$/g,''));if(!cols[0])continue;
+      const gc=(...ks)=>{for(const k of ks){const x=hdr.findIndex(h=>h.includes(k));if(x>=0&&cols[x])return cols[x];}return'';};
+      const nm=gc('name','student')||cols[0];const cn=gc('class');const ci=D.cls.find(c=>c.n.toLowerCase()===cn.toLowerCase())?.id||D.cls[0]?.id||'';
+      D.stu.push({id:`${D.cfg.stuPfx||'STU'}-${String(D.stu.length+1).padStart(4,'0')}`,nm,fn:nm.split(' ')[0],mn:'',ln:nm.split(' ').slice(-1)[0],ro:gc('roll'),ci,ft:gc('father','guardian'),ph:gc('phone','mobile'),db:gc('dob','birth'),ad:todayBS(),gn:gc('gender')||'Male',ar:gc('address'),st:'Active',rm:''});add++;}
+    sv('stu');renderStudents();renderDashboard();toast(`Imported ${add} students`);
+  };r.readAsText(f);e.target.value='';
+}
+
+// =====================================================
+// CLASSES
+// =====================================================
+let _ci=-1;
+function resetClsForm(){_ci=-1;document.getElementById('clsFT').textContent='ADD CLASS';['clsNm','clsSc','clsTc'].forEach(id=>document.getElementById(id).value='');}
+function saveCls(){const n=document.getElementById('clsNm').value.trim();if(!n){toast('Class name required','err');return;}const c={id:_ci>=0?D.cls[_ci].id:'CLS'+Date.now(),n,s:document.getElementById('clsSc').value.trim(),t:document.getElementById('clsTc').value.trim()};if(_ci>=0)D.cls[_ci]=c;else D.cls.push(c);sv('cls');renderCls();resetClsForm();fillDDs();toast('Class saved');}
+function renderCls(){document.getElementById('clsTbl').innerHTML=D.cls.map((c,i)=>`<tr><td>${i+1}</td><td><strong>${c.n}</strong></td><td>${c.s||'-'}</td><td>${c.t||'-'}</td><td>${D.stu.filter(s=>s.ci===c.id&&s.st==='Active').length}</td><td><button class="btn bxs bse" onclick="editCls(${i})">EDIT</button> <button class="btn bxs bdg" onclick="delCls(${i})">DEL</button></td></tr>`).join('')||`<tr><td colspan="6" style="text-align:center;color:var(--mu);padding:12px">No classes</td></tr>`;}
+function editCls(ix){_ci=ix;const c=D.cls[ix];document.getElementById('clsFT').textContent='EDIT CLASS';document.getElementById('clsNm').value=c.n;document.getElementById('clsSc').value=c.s||'';document.getElementById('clsTc').value=c.t||'';}
+function delCls(ix){if(!confirm('Delete class?'))return;D.cls.splice(ix,1);sv('cls');renderCls();fillDDs();}
+
+// =====================================================
+// FEE HEADINGS
+// =====================================================
+let _fi=-1;
+function resetFHForm(){_fi=-1;document.getElementById('fhFT').textContent='ADD FEE HEADING';document.getElementById('fhNm').value='';document.getElementById('fhTp').value='Monthly';document.getElementById('fhFq').value='Regular';}
+function saveFH(){const n=document.getElementById('fhNm').value.trim();if(!n){toast('Heading name required','err');return;}const h={id:_fi>=0?D.feeH[_fi].id:'FH'+Date.now(),n,tp:document.getElementById('fhTp').value,fq:document.getElementById('fhFq').value};if(_fi>=0)D.feeH[_fi]=h;else D.feeH.push(h);sv('feeH');renderFH();resetFHForm();fillDDs();toast('Fee heading saved');}
+function renderFH(){document.getElementById('fhTbl').innerHTML=D.feeH.map((h,i)=>`<tr><td>${i+1}</td><td><strong>${h.n}</strong></td><td><span class="badge binf">${h.tp}</span></td><td>${h.fq}</td><td><button class="btn bxs bse" onclick="editFH(${i})">EDIT</button> <button class="btn bxs bdg" onclick="delFH(${i})">DEL</button></td></tr>`).join('')||`<tr><td colspan="5" style="text-align:center;color:var(--mu);padding:12px">No fee headings</td></tr>`;}
+function editFH(ix){_fi=ix;const h=D.feeH[ix];document.getElementById('fhFT').textContent='EDIT FEE HEADING';document.getElementById('fhNm').value=h.n;document.getElementById('fhTp').value=h.tp;document.getElementById('fhFq').value=h.fq;}
+function delFH(ix){if(!confirm('Delete?'))return;D.feeH.splice(ix,1);sv('feeH');renderFH();}
+
+// =====================================================
+// CLASS FEES
+// =====================================================
+function openCFM(){fillDDs();buildCFH();openM('mCF');}
+function buildCFH(){const ci=document.getElementById('cfCl').value,yr=document.getElementById('cfYr').value,ex=D.cFees.find(f=>f.ci===ci&&f.yr==yr);document.getElementById('cfHD').innerHTML=D.feeH.length===0?'<div class="alert ainf">Add fee headings first.</div>':D.feeH.map(h=>`<div style="display:flex;gap:10px;align-items:center;margin-bottom:7px"><div style="flex:2;font-size:11px;font-weight:700">${h.n} <span style="color:var(--mu)">(${h.tp})</span></div><div class="fg"><label>Rs./${h.tp==='Yearly'?'Year':'Month'}</label><input type="number" id="cf_${h.id}" value="${ex?.f?.[h.id]||0}" style="width:100px"></div></div>`).join('');}
+document.getElementById('cfCl').addEventListener('change',buildCFH);document.getElementById('cfYr').addEventListener('change',buildCFH);
+function saveCF(){const ci=document.getElementById('cfCl').value,yr=document.getElementById('cfYr').value;if(!ci){toast('Select a class','err');return;}const f={};D.feeH.forEach(h=>{f[h.id]=parseFloat(document.getElementById('cf_'+h.id)?.value)||0;});const ix=D.cFees.findIndex(x=>x.ci===ci&&x.yr==yr);const e={id:ix>=0?D.cFees[ix].id:'CF'+Date.now(),ci,yr,f};if(ix>=0)D.cFees[ix]=e;else D.cFees.push(e);sv('cFees');closeM('mCF');renderCF();toast('Class fees saved');}
+function renderCF(){
+  document.getElementById('cfHd').innerHTML=`<tr><th>Class</th><th>Year</th>${D.feeH.map(h=>`<th>${h.n}</th>`).join('')}<th>Total/Month</th><th>Action</th></tr>`;
+  document.getElementById('cfTbl').innerHTML=D.cFees.map(f=>{const c=D.cls.find(x=>x.id===f.ci);const mo=D.feeH.reduce((a,h)=>{const v=f.f?.[h.id]||0;return a+(h.tp==='Yearly'?Math.round(v/12):h.tp==='One-time'?0:v);},0);return`<tr><td><strong>${c?c.n+(c.s?' '+c.s:''):'?'}</strong></td><td>${f.yr}</td>${D.feeH.map(h=>`<td>Rs.${f.f?.[h.id]||0}${h.tp==='Yearly'?`<br><span style="font-size:9px;color:var(--mu)">(Rs.${Math.round((f.f?.[h.id]||0)/12)}/mo)</span>`:''}</td>`).join('')}<td><strong>Rs.${mo}/mo</strong></td><td><button class="btn bxs bdg" onclick="delCF('${f.id}')">DEL</button></td></tr>`;}).join('')||`<tr><td colspan="${D.feeH.length+4}" style="text-align:center;color:var(--mu);padding:12px">No class fees set</td></tr>`;
+}
+function delCF(id){if(!confirm('Delete?'))return;D.cFees=D.cFees.filter(f=>f.id!==id);sv('cFees');renderCF();}
+
+// =====================================================
+// FEE ADJUSTMENT
+// =====================================================
+function openAdjM(){document.getElementById('adjIx').value=-1;document.getElementById('adjA').value='';document.getElementById('adjR').value='';fillDDs();openM('mAdj');}
+function saveAdj(){const si=document.getElementById('adjS').value,hi=document.getElementById('adjH').value;if(!si||!hi){toast('Select student and heading','err');return;}const ix=parseInt(document.getElementById('adjIx').value);const a={id:ix>=0?D.adjs[ix].id:'ADJ'+Date.now(),si,hi,tp:document.getElementById('adjT').value,a:parseFloat(document.getElementById('adjA').value)||0,r:document.getElementById('adjR').value};if(ix>=0)D.adjs[ix]=a;else D.adjs.push(a);sv('adjs');closeM('mAdj');renderAdj();toast('Adjustment saved');}
+function renderAdj(){const fs=document.getElementById('adjFS')?.value||'';document.getElementById('adjTbl').innerHTML=D.adjs.filter(a=>!fs||a.si===fs).map((a,i)=>{const s=D.stu.find(x=>x.id===a.si),c=D.cls.find(x=>x.id===s?.ci),h=D.feeH.find(x=>x.id===a.hi);return`<tr><td>${i+1}</td><td>${s?.nm||''}</td><td>${c?.n||''}</td><td>${h?.n||''}</td><td><span class="badge bwrn">${a.tp}</span></td><td>Rs.${a.a}</td><td>${a.r||''}</td><td><button class="btn bxs bdg" onclick="delAdj(${D.adjs.indexOf(a)})">DEL</button></td></tr>`;}).join('')||`<tr><td colspan="8" style="text-align:center;color:var(--mu);padding:12px">No adjustments</td></tr>`;}
+function delAdj(ix){if(!confirm('Delete?'))return;D.adjs.splice(ix,1);sv('adjs');renderAdj();}
+
+// =====================================================
+// BILLING ENGINE
+// =====================================================
+function getStuMoFee(si,yr){
+  const s=D.stu.find(x=>x.id===si);if(!s)return{f:{},tot:0};
+  const cf=D.cFees.find(x=>x.ci===s.ci&&x.yr==yr)||D.cFees.find(x=>x.ci===s.ci);
+  if(!cf)return{f:{},tot:0};
+  const f={};let tot=0;
+  D.feeH.forEach(h=>{let v=cf.f?.[h.id]||0;if(h.tp==='Yearly')v=Math.round(v/12);else if(h.tp==='One-time')v=0;f[h.id]=v;tot+=v;});
+  return{f,tot};
+}
+function getStuAdjAmt(si){return D.adjs.filter(a=>a.si===si).reduce((t,a)=>t+(a.tp==='surcharge'?-(+a.a):(+a.a)),0);}
+function getStuPrevDue(si,mon,yr){
+  const s=D.stu.find(x=>x.id===si);
+  const opd=s?(+s.opd||0):0;
+  const billed=D.bills.filter(b=>b.si===si&&!(b.mo==mon&&b.yr==yr)).reduce((a,b)=>a+(+b.tot),0);
+  const paid=D.rcps.filter(r=>r.si===si).reduce((a,r)=>a+(+r.a),0);
+  return Math.max(0,opd+billed-paid);
+}
+function genAllBills(){
+  const mon=document.getElementById('bMon').value,yr=document.getElementById('bYr').value,cf=document.getElementById('bCls').value;
+  const students=D.stu.filter(s=>s.st==='Active'&&(!cf||s.ci===cf));let g=0;
+  students.forEach(s=>{
+    if(D.bills.find(b=>b.si===s.id&&b.mo==mon&&b.yr==yr))return;
+    const{f,tot}=getStuMoFee(s.id,yr);
+    D.bills.push({id:'B'+Date.now()+Math.random().toString(36).slice(2,5),si:s.id,mo:mon,yr,f,curr:tot,tot:tot,gd:todayBS()});g++;
+  });
+  sv('bills');renderBills();toast(`Generated ${g} bills for ${mname(mon)} ${yr} BS`);
+}
+function renderBills(){
+  const mon=document.getElementById('bMon').value,yr=document.getElementById('bYr').value,cf=document.getElementById('bCls').value;
+  const students=D.stu.filter(s=>s.st==='Active'&&(!cf||s.ci===cf));
+  document.getElementById('billTbl').innerHTML=students.map((s,i)=>{
+    const c=D.cls.find(x=>x.id===s.ci),bill=D.bills.find(b=>b.si===s.id&&b.mo==mon&&b.yr==yr);
+    const prev=getStuPrevDue(s.id,mon,yr),curr=bill?+bill.tot:getStuMoFee(s.id,yr).tot,totDue=prev+curr;
+    const paid=D.rcps.filter(r=>r.si===s.id&&r.mo==mon&&r.yr==yr).reduce((a,r)=>a+(+r.a),0),bal=totDue-paid;
+    const st=!bill?`<span class="badge bwrn">NOT GEN.</span>`:bal<=0?`<span class="badge bok2">PAID</span>`:`<span class="badge berr">PENDING</span>`;
+    return`<tr><td>${i+1}</td><td><strong>${s.nm}</strong></td><td>${c?c.n+(c.s?' '+c.s:''):''}</td><td>${mname(mon)} ${yr}</td><td style="color:${prev>0?'var(--dg)':'inherit'}">Rs.${prev}</td><td>Rs.${curr}</td><td><strong>Rs.${totDue}</strong></td><td style="color:var(--ok)">Rs.${paid}</td><td style="color:${bal>0?'var(--dg)':'var(--ok)'}"><strong>Rs.${bal}</strong></td><td>${st}</td><td><button class="btn bxs bac" onclick="prevInv('${s.id}','${mon}','${yr}')">&#128424; PRINT</button></td></tr>`;
+  }).join('')||`<tr><td colspan="11" style="text-align:center;color:var(--mu);padding:12px">Select month/year and click SHOW BILLS</td></tr>`;
+}
+function printAllBills(){
+  const mon=document.getElementById('bMon').value,yr=document.getElementById('bYr').value,cf=document.getElementById('bCls').value;
+  const students=D.stu.filter(s=>s.st==='Active'&&(!cf||s.ci===cf));
+  if(!students.length){toast('No students found','err');return;}
+  showPP(`BILLS — ${mname(mon)} ${yr} BS`,students.map(s=>buildInv(s.id,mon,yr)+'<div style="page-break-after:always;margin-bottom:20px"></div>').join(''));
+}
+
+// =====================================================
+// PROFESSIONAL INVOICE BUILDER
+// =====================================================
+function buildInv(si,mon,yr){
+  const s=D.stu.find(x=>x.id===si);if(!s)return'';
+  const c=D.cls.find(x=>x.id===s.ci),sc=D.cfg;
+  const bill=D.bills.find(b=>b.si===si&&b.mo==mon&&b.yr==yr);
+  const{f,tot:currFee}=getStuMoFee(si,yr);
+  const prev=getStuPrevDue(si,mon,yr),totDue=prev+currFee;
+  const paid=D.rcps.filter(r=>r.si===si&&r.mo==mon&&r.yr==yr).reduce((a,r)=>a+(+r.a),0),bal=totDue-paid;
+  const bNo=`${sc.billPfx||'BILL'}-${yr}-${String(mon).padStart(2,'0')}-${si.slice(-4)}`;
+  const fRows=D.feeH.map(h=>{const v=f[h.id]||0;return v>0?`<tr style="border-bottom:1px solid #e8e8e8"><td style="padding:5px 10px">${h.n}</td><td style="padding:5px 10px;color:#666;font-size:10pt">${h.tp}</td><td style="padding:5px 10px;text-align:right">${h.tp==='Yearly'?`${(D.cFees.find(x=>x.ci===s.ci&&x.yr==yr)||D.cFees.find(x=>x.ci===s.ci))?.f?.[h.id]||0}/yr`:''}</td><td style="padding:5px 10px;text-align:right;font-weight:700">Rs.${v.toLocaleString()}</td></tr>`:''}).join('');
+  return`<div style="font-family:'Courier New',monospace;color:#111;background:#fff;padding:0;max-width:680px;margin:0 auto">
+<table style="width:100%;border-collapse:collapse;padding-bottom:10px;margin-bottom:10px;border-bottom:3px double #1a3a6b">
+  <tr><td style="width:70px;vertical-align:middle"><div style="width:64px;height:64px;border:2px solid #1a3a6b;display:flex;align-items:center;justify-content:center;font-size:26px;background:#eef1fb">&#127979;</div></td>
+  <td style="padding-left:12px;vertical-align:middle">
+    <div style="font-size:21pt;font-weight:700;color:#1a3a6b;letter-spacing:1px">${sc.name}</div>
+    <div style="font-size:11pt;color:#444;margin-top:3px;font-weight:700">${sc.addr} &nbsp;|&nbsp; Tel: ${sc.phone}</div>
+    <div style="font-size:10pt;color:#777;font-weight:700">Email: ${sc.email} &nbsp;|&nbsp; Reg: ${sc.reg} &nbsp;|&nbsp; PAN: ${sc.pan}</div>
+  </td>
+  <td style="text-align:right;vertical-align:middle;width:170px">
+    <div style="font-size:15pt;font-weight:700;color:#fff;background:#1a3a6b;padding:5px 14px;display:inline-block;letter-spacing:2px">FEE BILL</div>
+    <div style="font-size:9.5pt;margin-top:6px"><strong>Bill No:</strong> ${bNo}</div>
+    <div style="font-size:9.5pt"><strong>Date:</strong> ${fmtBS(todayBS())}</div>
+  </td></tr>
+</table>
+<table style="width:100%;border-collapse:collapse;margin-bottom:12px;border:1px solid #d0d8f0;background:#f7f9ff">
+  <tr style="background:#1a3a6b;color:#fff"><th colspan="4" style="padding:7px 12px;font-size:11pt;text-align:left;font-weight:700;letter-spacing:.5px">STUDENT DETAILS</th></tr>
+  <tr><td style="padding:5px 12px;font-size:10.5pt;width:50%"><strong>Name:</strong> ${s.nm}</td><td style="padding:5px 12px;font-size:10.5pt"><strong>Bill Month:</strong> <span style="color:#b8860b;font-weight:700">${mname(mon)} ${yr} BS</span></td></tr>
+  <tr style="background:#eef1fb"><td style="padding:5px 12px;font-size:10.5pt"><strong>Class:</strong> ${c?c.n+(c.s?' — Sec. '+c.s:''):'-'}</td><td style="padding:5px 12px;font-size:10.5pt"><strong>Roll No.:</strong> ${s.ro||'-'}</td></tr>
+  <tr><td style="padding:5px 12px;font-size:10.5pt"><strong>Father/Guardian:</strong> ${s.ft||'-'}</td><td style="padding:5px 12px;font-size:10.5pt"><strong>Phone:</strong> ${s.ph||'-'}</td></tr>
+  <tr style="background:#eef1fb"><td style="padding:5px 12px;font-size:10.5pt"><strong>Student ID:</strong> ${s.id}</td><td style="padding:5px 12px;font-size:10.5pt"><strong>Admission:</strong> ${s.ad||'-'}</td></tr>
+</table>
+<table style="width:100%;border-collapse:collapse;border:1px solid #ddd">
+  <thead><tr style="background:#1a3a6b;color:#fff"><th style="padding:6px 10px;text-align:left;width:38%">Fee Heading</th><th style="padding:6px 10px;text-align:left;width:15%">Type</th><th style="padding:6px 10px;text-align:right;width:22%">Annual Rate</th><th style="padding:6px 10px;text-align:right;width:25%">This Month (Rs.)</th></tr></thead>
+  <tbody>${fRows||'<tr><td colspan="4" style="padding:8px;text-align:center;color:#888">No fee structure defined</td></tr>'}</tbody>
+</table>
+<table style="width:100%;border-collapse:collapse;border:1px solid #ddd;border-top:none">
+  <tr style="background:#f0f4dc"><td style="padding:6px 12px;font-size:11pt">Current Month Fee</td><td style="padding:6px 12px;text-align:right;font-size:11pt;font-weight:700">Rs. ${currFee.toLocaleString()}</td></tr>
+  ${prev>0?`<tr style="background:#fff0f0"><td style="padding:6px 12px;font-size:11pt;color:#6b0000">&#9888; Previous Month Dues (Carried Forward)</td><td style="padding:6px 12px;text-align:right;font-size:11pt;color:#6b0000;font-weight:700">Rs. ${prev.toLocaleString()}</td></tr>`:''}
+  <tr style="background:#1a3a6b;color:#fff"><td style="padding:8px 12px;font-size:13pt;font-weight:700;letter-spacing:.5px">TOTAL DUE</td><td style="padding:8px 12px;text-align:right;font-size:15pt;font-weight:700">Rs. ${totDue.toLocaleString()}</td></tr>
+  ${paid>0?`<tr style="background:#d4edda"><td style="padding:5px 12px;font-size:10.5pt;color:#155724">(&#10003;) Amount Paid This Month</td><td style="padding:5px 12px;text-align:right;color:#155724">Rs. ${paid.toLocaleString()}</td></tr>`:''}
+  <tr style="background:${bal>0?'#fde':'#d4edda'}"><td style="padding:7px 12px;font-size:12pt;font-weight:700;color:${bal>0?'#6b0000':'#155724'}">BALANCE${bal<=0?' (CLEARED)':''}</td><td style="padding:7px 12px;text-align:right;font-size:13pt;font-weight:700;color:${bal>0?'#6b0000':'#155724'}">Rs. ${bal.toLocaleString()}</td></tr>
+</table>
+${prev>0?`<div style="background:#fff3cd;border-left:4px solid #b8860b;padding:6px 10px;margin-top:8px;font-size:10pt;color:#856404"><strong>Notice:</strong> An amount of Rs. ${prev.toLocaleString()} has been carried forward from previous month(s). Please settle all dues at the earliest.</div>`:''}
+<table style="width:100%;margin-top:28px;font-size:10pt;border-top:1px dashed #ccc;padding-top:8px">
+  <tr><td style="text-align:center;width:33%">_______________<br>Cashier</td><td style="text-align:center;width:34%">_______________<br>Accounts Officer</td><td style="text-align:right;width:33%">_______________<br>Principal<br><em>${sc.principal||''}</em></td></tr>
+</table>
+<div style="text-align:center;margin-top:10px;font-size:10pt;color:#555;border-top:1px dashed #ddd;padding-top:6px">*** Please pay fee by the 10th of every Nepali month. Late payments may attract fine. ***<br><strong style="font-size:11pt">${sc.name}</strong> | ${sc.addr} | ${sc.phone}</div>
+</div>`;
+}
+function prevInv(si,mon,yr){const h=buildInv(si,mon,yr);if(!h){toast('No bill data','err');return;}showPP(`FEE BILL — ${mname(mon)} ${yr} BS`,h);}
+
+// =====================================================
+// CASH RECEIPTS
+// =====================================================
+function openRcpM(){document.getElementById('rcpIx').value=-1;document.getElementById('rcpA').value='';document.getElementById('rcpBl').value='';document.getElementById('rcpR').value='';document.getElementById('rcpDisc').value='';document.getElementById('rcpDiscR').value='';document.getElementById('rcpD').value=todayBS();['rpPrev','rpCurr','rpTot','rpDiscDisp'].forEach(id=>document.getElementById(id).textContent='Rs. 0');fillDDs();openM('mRcp');}
+function loadStuDue(){
+  const si=document.getElementById('rcpS').value,mon=document.getElementById('rcpM').value,yr=document.getElementById('rcpY').value;if(!si)return;
+  const prev=getStuPrevDue(si,mon,yr),{tot:curr}=getStuMoFee(si,yr);
+  const disc=parseFloat(document.getElementById('rcpDisc').value)||0;
+  const tot=Math.max(0,prev+curr-disc);
+  document.getElementById('rpPrev').textContent=`Rs. ${prev.toLocaleString()}`;document.getElementById('rpCurr').textContent=`Rs. ${curr.toLocaleString()}`;document.getElementById('rpDiscDisp').textContent=`Rs. ${disc.toLocaleString()}`;document.getElementById('rpTot').textContent=`Rs. ${tot.toLocaleString()}`;document.getElementById('rcpA').value=tot;calcBal();
+}
+function calcBal(){const t=parseInt(document.getElementById('rpTot').textContent.replace(/[^0-9]/g,''))||0,p=parseInt(document.getElementById('rcpA').value)||0;document.getElementById('rcpBl').value=t-p;}
+function saveRcp(andPrint=true){
+  const si=document.getElementById('rcpS').value,amt=parseFloat(document.getElementById('rcpA').value)||0;if(!si||!amt){toast('Select student and enter amount','err');return;}
+  const disc=parseFloat(document.getElementById('rcpDisc').value)||0;
+  const no=`${D.cfg.rcpPfx||'RCP'}-${String(D.rcps.length+1).padStart(5,'0')}`;
+  const r={id:'R'+Date.now(),no,si,mo:document.getElementById('rcpM').value,yr:document.getElementById('rcpY').value,a:amt,disc,discR:document.getElementById('rcpDiscR').value,md:document.getElementById('rcpMd').value,dt:document.getElementById('rcpD').value,rm:document.getElementById('rcpR').value};
+  D.rcps.push(r);sv('rcps');closeM('mRcp');renderRcps();renderDashboard();if(andPrint)printRcpById(r.id);toast('Receipt '+no+' saved');
+}
+function renderRcps(){
+  const fs=document.getElementById('rcpFS')?.value||'';
+  document.getElementById('rcpTbl').innerHTML=D.rcps.filter(r=>!fs||r.si===fs).map((r,i)=>{const s=D.stu.find(x=>x.id===r.si),c=D.cls.find(x=>x.id===s?.ci);return`<tr><td>${i+1}</td><td><strong>${r.no}</strong></td><td>${r.dt}</td><td>${s?.nm||''}</td><td>${c?.n||''}</td><td>${mname(r.mo)} ${r.yr}</td><td><strong>Rs.${(+r.a).toLocaleString()}</strong></td><td>${(+r.disc||0)>0?`<span class="badge bwrn">Rs.${(+r.disc).toLocaleString()}</span>`:'-'}</td><td>${r.md}</td><td><button class="btn bxs bac" onclick="printRcpById('${r.id}')">&#128424; PRINT 2X</button> <button class="btn bxs bdg" onclick="delRcp('${r.id}')">DEL</button></td></tr>`;}).join('')||`<tr><td colspan="10" style="text-align:center;color:var(--mu);padding:12px">No receipts</td></tr>`;
+}
+function delRcp(id){if(!confirm('Delete receipt?'))return;D.rcps=D.rcps.filter(r=>r.id!==id);sv('rcps');renderRcps();renderDashboard();}
+
+// =====================================================
+// PROFESSIONAL RECEIPT BUILDER (2 COPIES)
+// =====================================================
+function buildRcpHTML(id){
+  const r=D.rcps.find(x=>x.id===id);if(!r)return'';
+  const s=D.stu.find(x=>x.id===r.si),c=D.cls.find(x=>x.id===s?.ci),sc=D.cfg;
+  const prev=getStuPrevDue(r.si,r.mo,r.yr),{tot:curr}=getStuMoFee(r.si,r.yr),disc=+r.disc||0,totDue=Math.max(0,prev+curr-disc),bal=totDue-(+r.a);
+  const copy=(lbl)=>`<div style="border:2px solid #333;padding:12px;width:330px;display:inline-block;vertical-align:top;margin:6px;font-family:'Courier New',monospace;font-size:10.5pt">
+    <div style="text-align:center;padding-bottom:8px;margin-bottom:8px;border-bottom:2px dashed #333">
+      <div style="font-size:15pt;font-weight:700;color:#1a3a6b">${sc.name}</div>
+      <div style="font-size:10pt;color:#444;font-weight:700">${sc.addr}</div>
+      <div style="font-size:10pt;color:#444;font-weight:700">Tel: ${sc.phone}</div>
+      <div style="font-size:12pt;font-weight:700;margin-top:6px;letter-spacing:2px;border:1.5px solid #333;display:inline-block;padding:3px 10px">CASH RECEIPT</div>
+    </div>
+    <table style="width:100%;font-size:10pt;border-collapse:collapse">
+      <tr><td>Receipt No:</td><td style="text-align:right"><strong>${r.no}</strong></td></tr>
+      <tr><td>Date (BS):</td><td style="text-align:right"><strong>${fmtBS(r.dt)}</strong></td></tr>
+    </table>
+    <div style="border-top:1px dashed #333;border-bottom:1px dashed #333;margin:7px 0;padding:6px 0;font-size:10pt">
+      <div><strong>Student:</strong> ${s?.nm||''}</div>
+      <div><strong>Class:</strong> ${c?c.n+(c.s?' '+c.s:''):'-'} &nbsp;|&nbsp; Roll: ${s?.ro||'-'}</div>
+      <div><strong>Father:</strong> ${s?.ft||'-'}</div>
+      <div><strong>ID:</strong> ${s?.id||''}</div>
+    </div>
+    <table style="width:100%;font-size:10pt;border-collapse:collapse">
+      <tr><td>Fee Month:</td><td style="text-align:right"><strong style="color:#b8860b">${mname(r.mo)} ${r.yr} BS</strong></td></tr>
+      <tr><td>Payment Mode:</td><td style="text-align:right">${r.md}</td></tr>
+      ${disc>0?`<tr><td style="color:#856404">Discount Applied:</td><td style="text-align:right;color:#856404"><strong>Rs. ${disc.toLocaleString()}</strong></td></tr>`:''}
+    </table>
+    <div style="border:2px solid #1a3a6b;margin:8px 0;padding:8px;text-align:center;background:#f7f9ff">
+      <div style="font-size:9pt;color:#555;margin-bottom:2px">AMOUNT RECEIVED (Rs.)</div>
+      <div style="font-size:22pt;font-weight:700;color:#1a5c1a">Rs. ${(+r.a).toLocaleString()}</div>
+      <div style="font-size:9pt;border-top:1px dashed #ccc;margin-top:4px;padding-top:3px;color:#333">${n2w(+r.a)}</div>
+    </div>
+    ${disc>0&&r.discR?`<div style="font-size:9pt;color:#856404;text-align:center;margin-bottom:6px">Discount Reason: ${r.discR}</div>`:''}
+    <table style="width:100%;font-size:10pt;border-collapse:collapse">
+      <tr><td>Total Due:</td><td style="text-align:right">Rs. ${totDue.toLocaleString()}</td></tr>
+      <tr><td><strong>Balance:</strong></td><td style="text-align:right;color:${bal>0?'#6b0000':'#155724'}"><strong>Rs. ${bal.toLocaleString()}</strong></td></tr>
+    </table>
+    ${r.rm?`<div style="font-size:9pt;color:#555;margin-top:6px;border-top:1px dashed #ccc;padding-top:4px">Remarks: ${r.rm}</div>`:''}
+    <table style="width:100%;margin-top:18px;font-size:9pt;color:#555">
+      <tr><td style="text-align:center">___________<br>Cashier</td><td style="text-align:center">___________<br>A/C Officer</td><td style="text-align:right"><em>${lbl}</em></td></tr>
+    </table>
+  </div>`;
+  return`<div style="text-align:center;font-family:'Courier New',monospace">${copy('Office Copy')}${copy('Student Copy')}</div>`;
+}
+function printRcpById(id){showPP('CASH RECEIPT — 2 COPIES',buildRcpHTML(id));}
+
+// =====================================================
+// STUDENT LEDGER
+// =====================================================
+function renderLedger(){
+  const si=document.getElementById('ledStu').value,yr=document.getElementById('ledYr').value;
+  if(!si){document.getElementById('ledDiv').innerHTML='<div class="alert ainf">Select a student to view ledger.</div>';return;}
+  const s=D.stu.find(x=>x.id===si),c=D.cls.find(x=>x.id===s?.ci),sc=D.cfg;
+  let rows='',bal=0;
+  const opd=s?(+s.opd||0):0;
+  if(opd>0){
+    bal+=opd;
+    rows+=`<tr style="background:#fff3cd"><td>${s.opdYr?'Opening ('+s.opdYr+' BS)':'Opening Balance'}</td><td>Previous Year Due — B/F${s.opdRm?' ('+s.opdRm+')':''}</td><td>OPENING</td><td style="text-align:right">Rs.${opd.toLocaleString()}</td><td></td><td style="text-align:right;color:var(--dg)"><strong>Rs.${bal.toLocaleString()}</strong></td></tr>`;
+  }
+  for(let m=1;m<=12;m++){
+    const bill=D.bills.find(b=>b.si===si&&b.mo==m&&b.yr==yr);
+    const rcps=D.rcps.filter(r=>r.si===si&&r.mo==m&&r.yr==yr);
+    if(bill){bal+=(+bill.tot);rows+=`<tr><td>${mname(m)} ${yr}</td><td>Monthly Fee Bill</td><td>${sc.billPfx}-${yr}-${String(m).padStart(2,'0')}</td><td style="text-align:right">Rs.${(+bill.tot).toLocaleString()}</td><td></td><td style="text-align:right;color:${bal>0?'var(--dg)':'var(--ok)'}"><strong>Rs.${bal.toLocaleString()}</strong></td></tr>`;}
+    rcps.forEach(r=>{bal-=(+r.a);rows+=`<tr style="background:#e8f5e9"><td>${fmtBS(r.dt)}</td><td>Cash Receipt (${r.md})</td><td>${r.no}</td><td></td><td style="text-align:right;color:var(--ok)">Rs.${(+r.a).toLocaleString()}</td><td style="text-align:right;color:${bal>0?'var(--dg)':'var(--ok)'}"><strong>Rs.${bal.toLocaleString()}</strong></td></tr>`;});
+  }
+  const tB=opd+D.bills.filter(b=>b.si===si&&b.yr==yr).reduce((a,b)=>a+(+b.tot),0),tP=D.rcps.filter(r=>r.si===si&&r.yr==yr).reduce((a,r)=>a+(+r.a),0);
+  document.getElementById('ledDiv').innerHTML=`<div class="fsec">
+    <div style="text-align:center;margin-bottom:12px">
+      <div style="font-size:20px;font-weight:700;color:var(--pr)">${sc.name}</div>
+      <div style="font-size:12px;font-weight:700;color:var(--mu)">${sc.addr}</div>
+      <div style="font-size:13px;font-weight:700;margin-top:6px;border:1px solid var(--bd);padding:4px 12px;display:inline-block">STUDENT PERSONAL LEDGER — ${yr} BS</div>
+    </div>
+    <table style="width:100%;font-size:11px;border-collapse:collapse;margin-bottom:10px">
+      <tr><td style="padding:3px"><strong>Name:</strong> ${s?.nm}</td><td><strong>Class:</strong> ${c?c.n+(c.s?' '+c.s:''):'-'}</td><td><strong>Roll:</strong> ${s?.ro||'-'}</td></tr>
+      <tr><td><strong>Father:</strong> ${s?.ft||'-'}</td><td><strong>Phone:</strong> ${s?.ph||'-'}</td><td><strong>ID:</strong> ${s?.id}</td></tr>
+    </table>
+    <div class="tw"><table>
+      <thead><tr><th>Date / Period</th><th>Narration</th><th>Reference</th><th style="text-align:right">Debit (Bill)</th><th style="text-align:right">Credit (Paid)</th><th style="text-align:right">Running Balance</th></tr></thead>
+      <tbody>${rows||`<tr><td colspan="6" style="text-align:center;color:var(--mu);padding:12px">No transactions for ${yr} BS</td></tr>`}</tbody>
+      <tfoot><tr><td colspan="3"><strong>TOTAL — ${yr} BS</strong></td><td style="text-align:right"><strong>Rs.${tB.toLocaleString()}</strong></td><td style="text-align:right"><strong>Rs.${tP.toLocaleString()}</strong></td><td style="text-align:right;color:${bal>0?'#ff9':'#9f9'}"><strong>Rs.${bal.toLocaleString()}</strong></td></tr></tfoot>
+    </table></div>
+  </div>`;
+}
+function printLedger(){const s=D.stu.find(x=>x.id===document.getElementById('ledStu').value);showPP('STUDENT LEDGER — '+(s?.nm||''),`<div style="font-family:'Courier New',monospace;font-size:11pt">${document.getElementById('ledDiv').innerHTML}</div>`);}
+
+// =====================================================
+// EXAMS
+// =====================================================
+function openExamM(){document.getElementById('exIx').value=-1;document.getElementById('examMT').textContent='ADD EXAM';['exNm','exSt','exEn'].forEach(id=>document.getElementById(id).value='');document.getElementById('exSs').value='Upcoming';fillDDs();openM('mExam');}
+function saveExam(){const n=document.getElementById('exNm').value.trim();if(!n){toast('Exam name required','err');return;}const ix=parseInt(document.getElementById('exIx').value);const e={id:ix>=0?D.exams[ix].id:'EXM'+Date.now(),n,y:document.getElementById('exYr').value,s:document.getElementById('exSt').value,e:document.getElementById('exEn').value,ci:document.getElementById('exCl').value,st:document.getElementById('exSs').value};if(ix>=0)D.exams[ix]=e;else D.exams.push(e);sv('exams');closeM('mExam');renderExams();fillDDs();toast('Exam saved');}
+function renderExams(){document.getElementById('examTbl').innerHTML=D.exams.map((e,i)=>{const c=D.cls.find(x=>x.id===e.ci);const sb={Completed:'bok2',Ongoing:'bwrn',Upcoming:'binf'}[e.st]||'binf';return`<tr><td>${i+1}</td><td><strong>${e.n}</strong></td><td>${e.y}</td><td>${e.s||'-'}</td><td>${e.e||'-'}</td><td>${c?c.n:'All Classes'}</td><td><span class="badge ${sb}">${e.st}</span></td><td><button class="btn bxs bse" onclick="editExam(${i})">EDIT</button> <button class="btn bxs bdg" onclick="delExam(${i})">DEL</button></td></tr>`;}).join('')||`<tr><td colspan="8" style="text-align:center;color:var(--mu);padding:12px">No exams</td></tr>`;}
+function editExam(ix){const e=D.exams[ix];document.getElementById('exIx').value=ix;document.getElementById('examMT').textContent='EDIT EXAM';document.getElementById('exNm').value=e.n;document.getElementById('exYr').value=e.y;document.getElementById('exSt').value=e.s||'';document.getElementById('exEn').value=e.e||'';document.getElementById('exCl').value=e.ci||'';document.getElementById('exSs').value=e.st;openM('mExam');}
+function delExam(ix){if(!confirm('Delete?'))return;D.exams.splice(ix,1);sv('exams');renderExams();fillDDs();}
+
+// =====================================================
+// MARKS
+// =====================================================
+function loadMrkTbl(){
+  const eid=document.getElementById('mExam').value,cid=document.getElementById('mCls').value;if(!eid||!cid)return;
+  const sub=document.getElementById('mSub').value.trim()||'General',full=document.getElementById('mFull').value;
+  document.getElementById('mrkTbl').innerHTML=D.stu.filter(s=>s.ci===cid&&s.st==='Active').map((s,i)=>{const ex=D.marks.find(m=>m.ei===eid&&m.si===s.id&&m.sb===sub);const ob=ex?.ob??'';return`<tr><td>${i+1}</td><td>${s.ro||i+1}</td><td>${s.nm}</td><td><input type="number" id="mk_${s.id}" value="${ob}" min="0" max="${full}" style="width:70px;border:1px solid var(--bd2);padding:3px 5px;font-family:var(--fn);font-size:11px" onchange="updGr('${s.id}')"></td><td id="gr_${s.id}" style="font-weight:700">${ob!==''?grd(ob,full):''}</td><td><input type="text" id="rm_${s.id}" value="${ex?.rm||''}" style="width:110px;border:1px solid var(--bd2);padding:3px 5px;font-family:var(--fn);font-size:11px"></td></tr>`;}).join('')||`<tr><td colspan="6" style="text-align:center;color:var(--mu);padding:12px">No students</td></tr>`;
+}
+function grd(ob,full){const p=(ob/full)*100;return p>=90?'A+':p>=80?'A':p>=70?'B+':p>=60?'B':p>=50?'C+':p>=40?'C':'NG';}
+function updGr(id){const v=document.getElementById('mk_'+id)?.value,f=document.getElementById('mFull').value,g=document.getElementById('gr_'+id);if(g&&v!=='')g.textContent=grd(v,f);}
+function saveAllMarks(){
+  const eid=document.getElementById('mExam').value,cid=document.getElementById('mCls').value,sub=document.getElementById('mSub').value.trim()||'General',full=+document.getElementById('mFull').value,pass=+document.getElementById('mPass').value;
+  if(!eid||!cid){toast('Select exam and class','err');return;}
+  D.stu.filter(s=>s.ci===cid&&s.st==='Active').forEach(s=>{const ob=document.getElementById('mk_'+s.id)?.value;if(ob===''||ob===undefined)return;const rm=document.getElementById('rm_'+s.id)?.value||'';const ix=D.marks.findIndex(m=>m.ei===eid&&m.si===s.id&&m.sb===sub);const e={ei:eid,si:s.id,ci:cid,sb:sub,full,pass,ob:+ob,rm};if(ix>=0)D.marks[ix]=e;else D.marks.push(e);});
+  sv('marks');toast('Marks saved');loadMrkTbl();
+}
+function renderResults(){
+  const eid=document.getElementById('rExam').value,cid=document.getElementById('rCls').value;
+  if(!eid||!cid){document.getElementById('resDiv').innerHTML='<div class="alert ainf">Select exam and class.</div>';return;}
+  const exam=D.exams.find(e=>e.id===eid),cls=D.cls.find(c=>c.id===cid);
+  const subs=[...new Set(D.marks.filter(m=>m.ei===eid&&m.ci===cid).map(m=>m.sb))];
+  const rows=D.stu.filter(s=>s.ci===cid&&s.st==='Active').map(s=>{const sm=subs.map(sub=>D.marks.find(m=>m.ei===eid&&m.si===s.id&&m.sb===sub));const tot=sm.reduce((a,m)=>a+(m?.ob||0),0),ftot=sm.reduce((a,m)=>a+(m?.full||0),0),pct=ftot?Math.round((tot/ftot)*100):0,ok=sm.every(m=>!m||m.ob>=m.pass);return{s,sm,tot,ftot,pct,ok};}).sort((a,b)=>b.pct-a.pct);
+  document.getElementById('resDiv').innerHTML=`<div class="fsec">
+    <div style="text-align:center;margin-bottom:8px"><div style="font-size:14px;font-weight:700">${D.cfg.name}</div><div>RESULT SHEET — ${exam?.n||''} (${exam?.y||''} BS)</div><div style="font-size:11px">Class: ${cls?.n||''} ${cls?.s||''}</div></div>
+    <div class="tw"><table><thead><tr><th>Rank</th><th>Roll</th><th>Student</th>${subs.map(s=>`<th>${s}</th>`).join('')}<th>Total</th><th>%</th><th>Grade</th><th>Result</th></tr></thead>
+    <tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.s.ro||'-'}</td><td>${r.s.nm}</td>${r.sm.map(m=>`<td>${m?.ob??'-'}/${m?.full||100}</td>`).join('')}<td><strong>${r.tot}/${r.ftot}</strong></td><td>${r.pct}%</td><td><strong>${grd(r.tot,r.ftot)}</strong></td><td><span class="badge ${r.ok?'bok2':'berr'}">${r.ok?'PASS':'FAIL'}</span></td></tr>`).join('')}</tbody>
+    </table></div>
+  </div>`;
+}
+function printResults(){showPP('EXAM RESULTS',document.getElementById('resDiv').innerHTML);}
+
+// =====================================================
+// REPORTS
+// =====================================================
+function renderFeeRpt(){
+  const yr=document.getElementById('rpYr').value,cf=document.getElementById('rpCls').value;
+  const rows=D.stu.filter(s=>s.st==='Active'&&(!cf||s.ci===cf)).map(s=>{const c=D.cls.find(x=>x.id===s.ci),b=D.bills.filter(x=>x.si===s.id&&x.yr==yr).reduce((a,x)=>a+(+x.tot),0),p=D.rcps.filter(x=>x.si===s.id&&x.yr==yr).reduce((a,x)=>a+(+x.a),0);return{s,c,b,p,d:b-p};});
+  const gB=rows.reduce((a,r)=>a+r.b,0),gP=rows.reduce((a,r)=>a+r.p,0),gD=rows.reduce((a,r)=>a+r.d,0);
+  document.getElementById('fRptD').innerHTML=`<div class="tw"><table><thead><tr><th>#</th><th>Student</th><th>Class</th><th>Total Billed</th><th>Total Paid</th><th>Balance</th><th>Status</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.s.nm}</td><td>${r.c?.n||'-'}</td><td>Rs.${r.b.toLocaleString()}</td><td>Rs.${r.p.toLocaleString()}</td><td style="color:${r.d>0?'var(--dg)':'var(--ok)'}"><strong>Rs.${r.d.toLocaleString()}</strong></td><td><span class="badge ${r.d<=0?'bok2':'berr'}">${r.d<=0?'CLEAR':'PENDING'}</span></td></tr>`).join('')}</tbody><tfoot><tr><td colspan="3"><strong>GRAND TOTAL</strong></td><td><strong>Rs.${gB.toLocaleString()}</strong></td><td><strong>Rs.${gP.toLocaleString()}</strong></td><td style="color:${gD>0?'#ff9':'#9f9'}"><strong>Rs.${gD.toLocaleString()}</strong></td><td></td></tr></tfoot></table></div>`;
+}
+function renderDefaulters(){
+  const def=D.stu.filter(s=>s.st==='Active'&&getStuBal(s.id)>0);
+  document.getElementById('defD').innerHTML=`<div class="tw"><table><thead><tr><th>#</th><th>Student</th><th>Class</th><th>Phone</th><th>Balance Due</th></tr></thead><tbody>${def.map((s,i)=>{const c=D.cls.find(x=>x.id===s.ci);return`<tr><td>${i+1}</td><td>${s.nm}</td><td>${c?.n||'-'}</td><td>${s.ph||'-'}</td><td style="color:var(--dg)"><strong>Rs.${getStuBal(s.id).toLocaleString()}</strong></td></tr>`;}).join('')||`<tr><td colspan="5" style="text-align:center;color:var(--ok);padding:12px">&#10003; No defaulters! All fees cleared.</td></tr>`}</tbody></table></div>`;
+}
+function renderColRpt(){
+  const mon=document.getElementById('rpMon').value,yr=document.getElementById('rpCYr').value;
+  const rcps=D.rcps.filter(r=>r.mo==mon&&r.yr==yr),tot=rcps.reduce((a,r)=>a+(+r.a),0);
+  document.getElementById('colD').innerHTML=`<div style="margin-bottom:8px;font-size:13px;font-weight:700">Collection for <strong>${mname(mon)} ${yr} BS</strong>: Rs. ${tot.toLocaleString()}</div><div class="tw"><table><thead><tr><th>#</th><th>Receipt No.</th><th>Date</th><th>Student</th><th>Class</th><th>Mode</th><th>Amount</th></tr></thead><tbody>${rcps.map((r,i)=>{const s=D.stu.find(x=>x.id===r.si),c=D.cls.find(x=>x.id===s?.ci);return`<tr><td>${i+1}</td><td>${r.no}</td><td>${r.dt}</td><td>${s?.nm||''}</td><td>${c?.n||''}</td><td>${r.md}</td><td>Rs.${(+r.a).toLocaleString()}</td></tr>`;}).join('')||`<tr><td colspan="7" style="text-align:center;color:var(--mu);padding:12px">No collection this month</td></tr>`}</tbody><tfoot><tr><td colspan="6"><strong>TOTAL</strong></td><td><strong>Rs.${tot.toLocaleString()}</strong></td></tr></tfoot></table></div>`;
+}
+
+// =====================================================
+// PRINT STUDENT LIST
+// =====================================================
+function printStuList(){
+  const sc=D.cfg,b=adToBS(new Date()),list=D.stu.filter(s=>s.st==='Active');
+  showPP('STUDENT LIST',`<div style="font-family:'Courier New',monospace;font-size:11pt">
+    <div style="text-align:center;margin-bottom:14px">
+      <div style="font-size:20pt;font-weight:700;color:#1a3a6b">${sc.name}</div>
+      <div style="font-size:11pt;color:#444;font-weight:700">${sc.addr} | Tel: ${sc.phone}</div>
+      <div style="font-size:14pt;font-weight:700;margin-top:8px;border-top:2px solid #1a3a6b;border-bottom:2px solid #1a3a6b;padding:4px">STUDENT LIST</div>
+      <div style="font-size:9pt;color:#888">Printed: ${b.d} ${NM[b.m-1]} ${b.y} BS &nbsp;|&nbsp; Total Active: ${list.length}</div>
+    </div>
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr style="background:#1a3a6b;color:#fff">${['#','ID','Name','Class','Roll','Father','Phone','DOB (BS)'].map(h=>`<th style="padding:5px 8px">${h}</th>`).join('')}</tr></thead>
+      <tbody>${list.map((s,i)=>{const c=D.cls.find(x=>x.id===s.ci);return`<tr style="background:${i%2===0?'#f5f5dc':'#fff'}">${[i+1,s.id,`<strong>${s.nm}</strong>`,c?c.n+(c.s?' '+c.s:''):'-',s.ro||'-',s.ft||'-',s.ph||'-',s.db||'-'].map(v=>`<td style="padding:4px 8px;border-bottom:1px solid #ddd">${v}</td>`).join('')}</tr>`;}).join('')}</tbody>
+    </table>
+  </div>`);
+}
+
+// =====================================================
+// PRINT ENGINE — Opens real print window
+// =====================================================
+let _pp='',_pt='';
+function showPP(title,html){_pt=title;_pp=html;document.getElementById('ppTit').textContent='🖨 '+title;document.getElementById('ppCont').innerHTML=html;openM('ppModal');}
+function doPrint(){
+  const w=window.open('','_blank','width=920,height=700,scrollbars=yes,resizable=yes');
+  if(!w){alert('Pop-up blocked! Please allow pop-ups for this page to enable printing.');return;}
+  w.document.open();
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${_pt}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Courier New',monospace;font-size:11pt;background:#fff;color:#000;padding:8mm;}
+table{border-collapse:collapse;width:100%;}
+th{background:#1a3a6b;color:#fff;padding:5px 8px;text-align:left;font-size:10pt;}
+td{padding:4px 8px;border-bottom:1px solid #ddd;font-size:10pt;}
+tr:nth-child(even) td{background:#f5f5dc;}
+tfoot td{background:#1a1a0a;color:#fff;font-weight:700;}
+.no-print{display:block;}
+@page{margin:8mm;size:A4 portrait;}
+@media print{.no-print{display:none!important;}body{padding:0;}}
+</style></head><body>
+<div class="no-print" style="position:sticky;top:0;background:#1a3a6b;color:#fff;padding:7px 14px;margin:-8mm -8mm 14px;display:flex;justify-content:space-between;align-items:center;z-index:99">
+  <span style="font-weight:700;font-size:12pt">&#128424; ${_pt}</span>
+  <div style="display:flex;gap:8px">
+    <button onclick="window.print()" style="background:#b8860b;color:#fff;border:none;padding:6px 20px;cursor:pointer;font-weight:700;font-size:12px;font-family:monospace">PRINT</button>
+    <button onclick="window.close()" style="background:#555;color:#fff;border:none;padding:6px 14px;cursor:pointer;font-size:12px;font-family:monospace">CLOSE</button>
+  </div>
+</div>
+${_pp}
+</body></html>`);
+  w.document.close();w.focus();
+}
+
+// =====================================================
+// SETUP
+// =====================================================
+function saveSetup(){
+  const m={stNm:'name',stAd:'addr',stDi:'dist',stPv:'prov',stPh:'phone',stEm:'email',stRg:'reg',stPn:'pan',stYr:'year',stPr:'principal',stRP:'rcpPfx',stBP:'billPfx',stSP:'stuPfx'};
+  Object.entries(m).forEach(([id,k])=>{const el=document.getElementById(id);if(el)D.cfg[k]=k==='year'?+el.value:el.value;});
+  const un=document.getElementById('stUn').value.trim();if(un)D.cfg.uname=un;
+  const pw=document.getElementById('stPw').value;if(pw)D.cfg.pwd=pw;
+  D.cfg.gsUrl=document.getElementById('gsUrl').value;
+  sv('cfg');applyCfg();toast('Settings saved!');
+}
+function addSub(){const v=document.getElementById('newSub').value.trim();if(!v||D.subs.includes(v))return;D.subs.push(v);sv('subs');renderSubs();document.getElementById('newSub').value='';}
+function delSub(i){D.subs.splice(i,1);sv('subs');renderSubs();}
+function renderSubs(){document.getElementById('subList').innerHTML=D.subs.map((s,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 7px;border-bottom:1px solid var(--bd2)"><span>${s}</span><button class="btn bxs bdg" onclick="delSub(${i})">X</button></div>`).join('');}
+
+// =====================================================
+// GOOGLE SHEETS BACKUP
+// =====================================================
+function saveGsUrl(){D.cfg.gsUrl=document.getElementById('gsUrl').value;sv('cfg');toast('GS URL saved');}
+async function testGS(){const url=document.getElementById('gsUrl').value;if(!url){document.getElementById('gsTR').innerHTML='<div class="alert aerr">No URL set.</div>';return;}document.getElementById('gsTR').innerHTML='<div class="alert ainf">Testing connection &amp; auto-creating sheet tabs...</div>';try{await fetch(url+'?action=ping',{method:'GET',mode:'no-cors'});document.getElementById('gsTR').innerHTML='<div class="alert aok">Connected! Your Google Sheet has auto-created its tabs. You can now enable Auto-Save below.</div>';}catch(e){document.getElementById('gsTR').innerHTML=`<div class="alert aerr">Error: ${e.message}</div>`;}}
+function buildBackupPayload(){
+  return JSON.stringify({action:'backup',ts:new Date().toISOString(),data:{stu:D.stu,cls:D.cls,feeH:D.feeH,cFees:D.cFees,bills:D.bills,rcps:D.rcps,exams:D.exams,marks:D.marks}});
+}
+async function backupGS(){
+  const url=D.cfg.gsUrl;if(!url){alert('Set Google Sheets URL in Data Backup section first');return;}
+  document.getElementById('bkSt').innerHTML='<div class="alert ainf">Sending backup to Google Sheets (sheet tabs auto-created if missing)...</div>';
+  try{
+    await fetch(url,{method:'POST',mode:'no-cors',body:buildBackupPayload(),headers:{'Content-Type':'application/json'}});
+    logBk('Google Sheets (Manual)','Sent');
+    document.getElementById('bkSt').innerHTML='<div class="alert aok">Backup sent! Check your Google Sheet for data.</div>';
+  }catch(e){document.getElementById('bkSt').innerHTML=`<div class="alert aerr">Failed: ${e.message}</div>`;}
+}
+// ---- AUTO-SAVE EVERY 15 SECONDS ----
+let _autoSaveTimer=null;
+const AUTO_SAVE_INTERVAL=15000; // 15 seconds
+async function silentBackupGS(){
+  const url=D.cfg.gsUrl;
+  if(!url)return;
+  try{
+    await fetch(url,{method:'POST',mode:'no-cors',body:buildBackupPayload(),headers:{'Content-Type':'application/json'}});
+    const now=new Date();
+    D.cfg.lastAutoSync=now.toISOString();sv('cfg');
+    const el=document.getElementById('autoSaveLastSync');
+    if(el)el.textContent='&#10003; Last synced: '+now.toLocaleTimeString();
+    const st=document.getElementById('autoSaveStatus');
+    if(st){st.textContent='SYNCING...';st.className='badge bok2';setTimeout(()=>{if(D.cfg.autoSave){st.textContent='ON';st.className='badge bok2';}},800);}
+  }catch(e){
+    const st=document.getElementById('autoSaveStatus');
+    if(st){st.textContent='ERROR';st.className='badge berr';}
+  }
+}
+function startAutoSave(){
+  stopAutoSave();
+  if(!D.cfg.gsUrl){toast('Set and save your Google Sheets URL first','err');document.getElementById('autoSaveChk').checked=false;return;}
+  _autoSaveTimer=setInterval(silentBackupGS,AUTO_SAVE_INTERVAL);
+  silentBackupGS(); // immediate first sync
+  const st=document.getElementById('autoSaveStatus');if(st){st.textContent='ON';st.className='badge bok2';}
+}
+function stopAutoSave(){
+  if(_autoSaveTimer){clearInterval(_autoSaveTimer);_autoSaveTimer=null;}
+  const st=document.getElementById('autoSaveStatus');if(st){st.textContent='OFF';st.className='badge bwrn';}
+}
+function toggleAutoSave(){
+  const on=document.getElementById('autoSaveChk').checked;
+  D.cfg.autoSave=on;sv('cfg');
+  if(on){startAutoSave();toast('Auto-save enabled — syncing every 15 seconds');}
+  else{stopAutoSave();toast('Auto-save disabled');}
+}
+function initAutoSaveUI(){
+  const chk=document.getElementById('autoSaveChk');
+  if(!chk)return;
+  chk.checked=!!D.cfg.autoSave;
+  if(D.cfg.lastAutoSync){
+    const el=document.getElementById('autoSaveLastSync');
+    if(el)el.textContent='Last synced: '+new Date(D.cfg.lastAutoSync).toLocaleString();
+  }
+  if(D.cfg.autoSave&&D.cfg.gsUrl)startAutoSave();
+  else{const st=document.getElementById('autoSaveStatus');if(st){st.textContent='OFF';st.className='badge bwrn';}}
+}
+function exportJSON(){const a=document.createElement('a');a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify({exported:new Date().toISOString(),...D},null,2));a.download=`sms_backup_${todayBS()}.json`;a.click();logBk('Local JSON','Exported');}
+function restoreJSON(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const res=JSON.parse(ev.target.result);if(!confirm('Restore will OVERWRITE all current data. Continue?'))return;['stu','cls','feeH','cFees','bills','rcps','exams','marks','cfg','subs'].forEach(k=>{if(res[k]){D[k]=res[k];sv(k);}});applyCfg();renderDashboard();toast('Data restored!');}catch(err){alert('Invalid backup: '+err.message);}};r.readAsText(f);e.target.value='';}
+function logBk(tp,st){D.bkLog.unshift({dt:new Date().toLocaleString(),tp,rec:D.stu.length+D.rcps.length,st});if(D.bkLog.length>50)D.bkLog=D.bkLog.slice(0,50);sv('bkLog');renderBkLog();}
+function renderBkLog(){document.getElementById('bkLog').innerHTML=D.bkLog.slice(0,12).map(l=>`<tr><td>${l.dt}</td><td>${l.tp}</td><td>${l.rec}</td><td><span class="badge bok2">${l.st}</span></td></tr>`).join('')||`<tr><td colspan="4" style="text-align:center;color:var(--mu);padding:12px">No backup log</td></tr>`;}
+
+// =====================================================
+// TOAST
+// =====================================================
+function toast(msg,tp='ok'){const el=document.getElementById('syncT');el.textContent=(tp==='ok'?'✓ ':'✗ ')+msg;el.style.background=tp==='ok'?'#1a5c1a':'#6b0000';el.style.color='#fff';el.style.display='block';clearTimeout(window._tt);window._tt=setTimeout(()=>el.style.display='none',3000);}
+
+// =====================================================
+// SEED DEMO DATA ON FIRST LOAD
+// =====================================================
+window.addEventListener('load',()=>{
+  document.getElementById('lsName').textContent=D.cfg.name;
+  if(D.cls.length===0){
+    D.cls=[{id:'CLS1',n:'Class 1',s:'A',t:'Ram Prasad Sharma'},{id:'CLS2',n:'Class 2',s:'A',t:'Sita Devi Thapa'},{id:'CLS3',n:'Class 3',s:'B',t:'Hari Bahadur Gurung'}];
+    D.feeH=[{id:'FH1',n:'Tuition Fee',tp:'Monthly',fq:'Regular'},{id:'FH2',n:'Exam Fee',tp:'Yearly',fq:'Regular'},{id:'FH3',n:'Computer Fee',tp:'Monthly',fq:'Regular'},{id:'FH4',n:'Library Fee',tp:'Yearly',fq:'Regular'}];
+    D.cFees=[{id:'CF1',ci:'CLS1',yr:'2081',f:{FH1:800,FH2:2400,FH3:200,FH4:600}},{id:'CF2',ci:'CLS2',yr:'2081',f:{FH1:1000,FH2:2400,FH3:200,FH4:600}},{id:'CF3',ci:'CLS3',yr:'2081',f:{FH1:1200,FH2:2400,FH3:200,FH4:600}}];
+    D.stu=[{id:'STU-0001',nm:'Aarav Sharma',fn:'Aarav',mn:'',ln:'Sharma',ro:1,ci:'CLS1',db:'2074-05-10',gn:'Male',ad:'2081-01-01',ft:'Bikash Sharma',mt:'Sunita Sharma',ph:'9841000001',ar:'Kathmandu',st:'Active',rm:''},{id:'STU-0002',nm:'Priya Shrestha',fn:'Priya',mn:'',ln:'Shrestha',ro:2,ci:'CLS1',db:'2074-08-15',gn:'Female',ad:'2081-01-01',ft:'Nabin Shrestha',mt:'Kamala Shrestha',ph:'9841000002',ar:'Lalitpur',st:'Active',rm:''},{id:'STU-0003',nm:'Rohan Thapa',fn:'Rohan',mn:'',ln:'Thapa',ro:1,ci:'CLS2',db:'2073-02-20',gn:'Male',ad:'2081-01-01',ft:'Dilip Thapa',mt:'Meena Thapa',ph:'9841000003',ar:'Bhaktapur',st:'Active',rm:''},{id:'STU-0004',nm:'Anita Gurung',fn:'Anita',mn:'',ln:'Gurung',ro:2,ci:'CLS2',db:'2073-11-05',gn:'Female',ad:'2081-01-01',ft:'Mohan Gurung',mt:'Rita Gurung',ph:'9841000004',ar:'Pokhara',st:'Active',rm:''}];
+    ['cls','feeH','cFees','stu'].forEach(k=>sv(k));
+  }
+});
+</script>
+</body>
+</html>
