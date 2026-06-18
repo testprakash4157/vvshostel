@@ -388,16 +388,21 @@ tfoot td{background:#1a1a0a;color:#fff;font-weight:700;border-top:2px solid var(
     </div>
     <div id="gsTR" style="margin-top:8px"></div>
   </div>
-  <div class="fsec" style="background:#e8f5e9;border-color:var(--ok)"><div class="fst" style="color:var(--ok)">AUTO-SAVE (LIVE SYNC)</div>
+  <div class="fsec" style="background:#e8f5e9;border-color:var(--ok)"><div class="fst" style="color:var(--ok)">&#128225; REAL-TIME LIVE SYNC (ANY BROWSER / DEVICE)</div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <label style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;cursor:pointer">
-        <input type="checkbox" id="autoSaveChk" onchange="toggleAutoSave()" style="width:16px;height:16px;cursor:pointer">
-        ENABLE AUTO-SAVE EVERY 15 SECONDS
+        <input type="checkbox" id="liveSyncChk" onchange="toggleLiveSync()" style="width:16px;height:16px;cursor:pointer">
+        ENABLE LIVE SYNC (PUSH + PULL EVERY 15 SECONDS)
       </label>
-      <span id="autoSaveStatus" class="badge bwrn">OFF</span>
+      <span id="liveSyncStatus" class="badge bwrn">OFF</span>
     </div>
-    <div style="font-size:9.5pt;color:#388e3c;margin-top:6px">When enabled, all data (students, bills, receipts, marks, etc.) is automatically sent to your Google Sheet every 15 seconds, in the background, with no need to click "Backup" manually. The sheet auto-creates its own tabs on first connection.</div>
-    <div id="autoSaveLastSync" style="font-size:9.5pt;color:var(--mu);margin-top:4px"></div>
+    <div style="font-size:9.5pt;color:#388e3c;margin-top:6px">When enabled, this device sends its latest data to Google Sheets <strong>and</strong> pulls in any changes made from other browsers/devices every 15 seconds — so everyone sees the same live data, almost like a shared online database. The sheet auto-creates its own tabs on first connection.</div>
+    <div id="liveSyncLast" style="font-size:9.5pt;color:var(--mu);margin-top:4px"></div>
+    <div style="margin-top:8px;display:flex;gap:7px;flex-wrap:wrap">
+      <button class="btn bpr bsm" onclick="pullFromGS(true)">&#11015; PULL LATEST NOW</button>
+      <button class="btn bac bsm" onclick="silentBackupGS(true)">&#11014; PUSH NOW</button>
+    </div>
+    <div id="liveSyncMsg" style="margin-top:6px"></div>
   </div>
   <div class="fsec"><div class="fst">BACKUP / RESTORE (MANUAL)</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -862,7 +867,9 @@ function genAllBills(){
   students.forEach(s=>{
     if(D.bills.find(b=>b.si===s.id&&b.mo==mon&&b.yr==yr))return;
     const{f,tot}=getStuMoFee(s.id,yr);
-    D.bills.push({id:'B'+Date.now()+Math.random().toString(36).slice(2,5),si:s.id,mo:mon,yr,f,curr:tot,tot:tot,gd:todayBS()});g++;
+    const adj=getStuAdjAmt(s.id);
+    const net=Math.max(0,tot-adj);
+    D.bills.push({id:'B'+Date.now()+Math.random().toString(36).slice(2,5),si:s.id,mo:mon,yr,f,curr:tot,adj:adj,tot:net,gd:todayBS()});g++;
   });
   sv('bills');renderBills();toast(`Generated ${g} bills for ${mname(mon)} ${yr} BS`);
 }
@@ -891,48 +898,56 @@ function buildInv(si,mon,yr){
   const s=D.stu.find(x=>x.id===si);if(!s)return'';
   const c=D.cls.find(x=>x.id===s.ci),sc=D.cfg;
   const bill=D.bills.find(b=>b.si===si&&b.mo==mon&&b.yr==yr);
-  const{f,tot:currFee}=getStuMoFee(si,yr);
+  const{f,tot:grossFee}=getStuMoFee(si,yr);
+  const adj=bill?(+bill.adj||0):getStuAdjAmt(si);
+  const currFee=bill?(+bill.tot):Math.max(0,grossFee-adj);
   const prev=getStuPrevDue(si,mon,yr),totDue=prev+currFee;
-  const paid=D.rcps.filter(r=>r.si===si&&r.mo==mon&&r.yr==yr).reduce((a,r)=>a+(+r.a),0),bal=totDue-paid;
+  const rcpsThisMonth=D.rcps.filter(r=>r.si===si&&r.mo==mon&&r.yr==yr);
+  const paid=rcpsThisMonth.reduce((a,r)=>a+(+r.a),0);
+  const rcpDisc=rcpsThisMonth.reduce((a,r)=>a+(+r.disc||0),0);
+  const bal=totDue-paid;
   const bNo=`${sc.billPfx||'BILL'}-${yr}-${String(mon).padStart(2,'0')}-${si.slice(-4)}`;
-  const fRows=D.feeH.map(h=>{const v=f[h.id]||0;return v>0?`<tr style="border-bottom:1px solid #e8e8e8"><td style="padding:5px 10px">${h.n}</td><td style="padding:5px 10px;color:#666;font-size:10pt">${h.tp}</td><td style="padding:5px 10px;text-align:right">${h.tp==='Yearly'?`${(D.cFees.find(x=>x.ci===s.ci&&x.yr==yr)||D.cFees.find(x=>x.ci===s.ci))?.f?.[h.id]||0}/yr`:''}</td><td style="padding:5px 10px;text-align:right;font-weight:700">Rs.${v.toLocaleString()}</td></tr>`:''}).join('');
-  return`<div style="font-family:'Courier New',monospace;color:#111;background:#fff;padding:0;max-width:680px;margin:0 auto">
+  const fRows=D.feeH.map(h=>{const v=f[h.id]||0;return v>0?`<tr style="border-bottom:1px solid #e8e8e8"><td style="padding:6px 10px;font-size:11.5pt;font-weight:700">${h.n}</td><td style="padding:6px 10px;color:#555;font-size:10.5pt;font-weight:700">${h.tp}</td><td style="padding:6px 10px;text-align:right;font-size:10.5pt;font-weight:700">${h.tp==='Yearly'?`${(D.cFees.find(x=>x.ci===s.ci&&x.yr==yr)||D.cFees.find(x=>x.ci===s.ci))?.f?.[h.id]||0}/yr`:''}</td><td style="padding:6px 10px;text-align:right;font-weight:700;font-size:11.5pt">Rs.${v.toLocaleString()}</td></tr>`:''}).join('');
+  return`<div style="font-family:'Courier New',monospace;color:#111;background:#fff;padding:0;max-width:680px;margin:0 auto;font-weight:700">
 <table style="width:100%;border-collapse:collapse;padding-bottom:10px;margin-bottom:10px;border-bottom:3px double #1a3a6b">
-  <tr><td style="width:70px;vertical-align:middle"><div style="width:64px;height:64px;border:2px solid #1a3a6b;display:flex;align-items:center;justify-content:center;font-size:26px;background:#eef1fb">&#127979;</div></td>
+  <tr><td style="width:74px;vertical-align:middle"><div style="width:68px;height:68px;border:2px solid #1a3a6b;display:flex;align-items:center;justify-content:center;font-size:28px;background:#eef1fb">&#127979;</div></td>
   <td style="padding-left:12px;vertical-align:middle">
-    <div style="font-size:21pt;font-weight:700;color:#1a3a6b;letter-spacing:1px">${sc.name}</div>
-    <div style="font-size:11pt;color:#444;margin-top:3px;font-weight:700">${sc.addr} &nbsp;|&nbsp; Tel: ${sc.phone}</div>
-    <div style="font-size:10pt;color:#777;font-weight:700">Email: ${sc.email} &nbsp;|&nbsp; Reg: ${sc.reg} &nbsp;|&nbsp; PAN: ${sc.pan}</div>
+    <div style="font-size:24pt;font-weight:700;color:#1a3a6b;letter-spacing:1px">${sc.name}</div>
+    <div style="font-size:12.5pt;color:#333;margin-top:3px;font-weight:700">${sc.addr} &nbsp;|&nbsp; Tel: ${sc.phone}</div>
+    <div style="font-size:11pt;color:#666;font-weight:700">Email: ${sc.email} &nbsp;|&nbsp; Reg: ${sc.reg} &nbsp;|&nbsp; PAN: ${sc.pan}</div>
   </td>
-  <td style="text-align:right;vertical-align:middle;width:170px">
-    <div style="font-size:15pt;font-weight:700;color:#fff;background:#1a3a6b;padding:5px 14px;display:inline-block;letter-spacing:2px">FEE BILL</div>
-    <div style="font-size:9.5pt;margin-top:6px"><strong>Bill No:</strong> ${bNo}</div>
-    <div style="font-size:9.5pt"><strong>Date:</strong> ${fmtBS(todayBS())}</div>
+  <td style="text-align:right;vertical-align:middle;width:175px">
+    <div style="font-size:16pt;font-weight:700;color:#fff;background:#1a3a6b;padding:6px 14px;display:inline-block;letter-spacing:2px">FEE BILL</div>
+    <div style="font-size:10.5pt;margin-top:6px;font-weight:700"><strong>Bill No:</strong> ${bNo}</div>
+    <div style="font-size:10.5pt;font-weight:700"><strong>Date:</strong> ${fmtBS(todayBS())}</div>
   </td></tr>
 </table>
 <table style="width:100%;border-collapse:collapse;margin-bottom:12px;border:1px solid #d0d8f0;background:#f7f9ff">
-  <tr style="background:#1a3a6b;color:#fff"><th colspan="4" style="padding:7px 12px;font-size:11pt;text-align:left;font-weight:700;letter-spacing:.5px">STUDENT DETAILS</th></tr>
-  <tr><td style="padding:5px 12px;font-size:10.5pt;width:50%"><strong>Name:</strong> ${s.nm}</td><td style="padding:5px 12px;font-size:10.5pt"><strong>Bill Month:</strong> <span style="color:#b8860b;font-weight:700">${mname(mon)} ${yr} BS</span></td></tr>
-  <tr style="background:#eef1fb"><td style="padding:5px 12px;font-size:10.5pt"><strong>Class:</strong> ${c?c.n+(c.s?' — Sec. '+c.s:''):'-'}</td><td style="padding:5px 12px;font-size:10.5pt"><strong>Roll No.:</strong> ${s.ro||'-'}</td></tr>
-  <tr><td style="padding:5px 12px;font-size:10.5pt"><strong>Father/Guardian:</strong> ${s.ft||'-'}</td><td style="padding:5px 12px;font-size:10.5pt"><strong>Phone:</strong> ${s.ph||'-'}</td></tr>
-  <tr style="background:#eef1fb"><td style="padding:5px 12px;font-size:10.5pt"><strong>Student ID:</strong> ${s.id}</td><td style="padding:5px 12px;font-size:10.5pt"><strong>Admission:</strong> ${s.ad||'-'}</td></tr>
+  <tr style="background:#1a3a6b;color:#fff"><th colspan="4" style="padding:8px 12px;font-size:12.5pt;text-align:left;font-weight:700;letter-spacing:.5px">STUDENT DETAILS</th></tr>
+  <tr><td style="padding:6px 12px;font-size:11.5pt;width:50%;font-weight:700">Name: ${s.nm}</td><td style="padding:6px 12px;font-size:11.5pt;font-weight:700">Bill Month: <span style="color:#b8860b">${mname(mon)} ${yr} BS</span></td></tr>
+  <tr style="background:#eef1fb"><td style="padding:6px 12px;font-size:11.5pt;font-weight:700">Class: ${c?c.n+(c.s?' — Sec. '+c.s:''):'-'}</td><td style="padding:6px 12px;font-size:11.5pt;font-weight:700">Roll No.: ${s.ro||'-'}</td></tr>
+  <tr><td style="padding:6px 12px;font-size:11.5pt;font-weight:700">Father/Guardian: ${s.ft||'-'}</td><td style="padding:6px 12px;font-size:11.5pt;font-weight:700">Phone: ${s.ph||'-'}</td></tr>
+  <tr style="background:#eef1fb"><td style="padding:6px 12px;font-size:11.5pt;font-weight:700">Student ID: ${s.id}</td><td style="padding:6px 12px;font-size:11.5pt;font-weight:700">Admission: ${s.ad||'-'}</td></tr>
 </table>
 <table style="width:100%;border-collapse:collapse;border:1px solid #ddd">
-  <thead><tr style="background:#1a3a6b;color:#fff"><th style="padding:6px 10px;text-align:left;width:38%">Fee Heading</th><th style="padding:6px 10px;text-align:left;width:15%">Type</th><th style="padding:6px 10px;text-align:right;width:22%">Annual Rate</th><th style="padding:6px 10px;text-align:right;width:25%">This Month (Rs.)</th></tr></thead>
-  <tbody>${fRows||'<tr><td colspan="4" style="padding:8px;text-align:center;color:#888">No fee structure defined</td></tr>'}</tbody>
+  <thead><tr style="background:#1a3a6b;color:#fff"><th style="padding:7px 10px;text-align:left;width:38%;font-size:11.5pt">Fee Heading</th><th style="padding:7px 10px;text-align:left;width:15%;font-size:11.5pt">Type</th><th style="padding:7px 10px;text-align:right;width:22%;font-size:11.5pt">Annual Rate</th><th style="padding:7px 10px;text-align:right;width:25%;font-size:11.5pt">This Month (Rs.)</th></tr></thead>
+  <tbody>${fRows||'<tr><td colspan="4" style="padding:10px;text-align:center;color:#888;font-size:11pt">No fee structure defined</td></tr>'}</tbody>
 </table>
 <table style="width:100%;border-collapse:collapse;border:1px solid #ddd;border-top:none">
-  <tr style="background:#f0f4dc"><td style="padding:6px 12px;font-size:11pt">Current Month Fee</td><td style="padding:6px 12px;text-align:right;font-size:11pt;font-weight:700">Rs. ${currFee.toLocaleString()}</td></tr>
-  ${prev>0?`<tr style="background:#fff0f0"><td style="padding:6px 12px;font-size:11pt;color:#6b0000">&#9888; Previous Month Dues (Carried Forward)</td><td style="padding:6px 12px;text-align:right;font-size:11pt;color:#6b0000;font-weight:700">Rs. ${prev.toLocaleString()}</td></tr>`:''}
-  <tr style="background:#1a3a6b;color:#fff"><td style="padding:8px 12px;font-size:13pt;font-weight:700;letter-spacing:.5px">TOTAL DUE</td><td style="padding:8px 12px;text-align:right;font-size:15pt;font-weight:700">Rs. ${totDue.toLocaleString()}</td></tr>
-  ${paid>0?`<tr style="background:#d4edda"><td style="padding:5px 12px;font-size:10.5pt;color:#155724">(&#10003;) Amount Paid This Month</td><td style="padding:5px 12px;text-align:right;color:#155724">Rs. ${paid.toLocaleString()}</td></tr>`:''}
-  <tr style="background:${bal>0?'#fde':'#d4edda'}"><td style="padding:7px 12px;font-size:12pt;font-weight:700;color:${bal>0?'#6b0000':'#155724'}">BALANCE${bal<=0?' (CLEARED)':''}</td><td style="padding:7px 12px;text-align:right;font-size:13pt;font-weight:700;color:${bal>0?'#6b0000':'#155724'}">Rs. ${bal.toLocaleString()}</td></tr>
+  <tr style="background:#f0f4dc"><td style="padding:7px 12px;font-size:12pt">Sub-total (Current Month Fee)</td><td style="padding:7px 12px;text-align:right;font-size:12pt;font-weight:700">Rs. ${grossFee.toLocaleString()}</td></tr>
+  ${adj>0?`<tr style="background:#fff8e1"><td style="padding:6px 12px;font-size:11.5pt;color:#856404">(&minus;) Discount / Adjustment</td><td style="padding:6px 12px;text-align:right;font-size:11.5pt;color:#856404;font-weight:700">Rs. ${adj.toLocaleString()}</td></tr>
+  <tr style="background:#e8f0ff"><td style="padding:7px 12px;font-size:12pt">Net Current Month Fee</td><td style="padding:7px 12px;text-align:right;font-size:12pt;font-weight:700">Rs. ${currFee.toLocaleString()}</td></tr>`:''}
+  ${prev>0?`<tr style="background:#fff0f0"><td style="padding:7px 12px;font-size:12pt;color:#6b0000">&#9888; Previous Month Dues (Carried Forward)</td><td style="padding:7px 12px;text-align:right;font-size:12pt;color:#6b0000;font-weight:700">Rs. ${prev.toLocaleString()}</td></tr>`:''}
+  <tr style="background:#1a3a6b;color:#fff"><td style="padding:9px 12px;font-size:15pt;font-weight:700;letter-spacing:.5px">TOTAL DUE</td><td style="padding:9px 12px;text-align:right;font-size:17pt;font-weight:700">Rs. ${totDue.toLocaleString()}</td></tr>
+  ${rcpDisc>0?`<tr style="background:#fff8e1"><td style="padding:6px 12px;font-size:11.5pt;color:#856404">(&minus;) Discount Given at Payment</td><td style="padding:6px 12px;text-align:right;font-size:11.5pt;color:#856404;font-weight:700">Rs. ${rcpDisc.toLocaleString()}</td></tr>`:''}
+  ${paid>0?`<tr style="background:#d4edda"><td style="padding:6px 12px;font-size:11.5pt;color:#155724">(&#10003;) Amount Paid This Month</td><td style="padding:6px 12px;text-align:right;font-size:11.5pt;color:#155724;font-weight:700">Rs. ${paid.toLocaleString()}</td></tr>`:''}
+  <tr style="background:${bal>0?'#fde':'#d4edda'}"><td style="padding:8px 12px;font-size:14pt;font-weight:700;color:${bal>0?'#6b0000':'#155724'}">BALANCE${bal<=0?' (CLEARED)':''}</td><td style="padding:8px 12px;text-align:right;font-size:15pt;font-weight:700;color:${bal>0?'#6b0000':'#155724'}">Rs. ${bal.toLocaleString()}</td></tr>
 </table>
-${prev>0?`<div style="background:#fff3cd;border-left:4px solid #b8860b;padding:6px 10px;margin-top:8px;font-size:10pt;color:#856404"><strong>Notice:</strong> An amount of Rs. ${prev.toLocaleString()} has been carried forward from previous month(s). Please settle all dues at the earliest.</div>`:''}
-<table style="width:100%;margin-top:28px;font-size:10pt;border-top:1px dashed #ccc;padding-top:8px">
+${prev>0?`<div style="background:#fff3cd;border-left:4px solid #b8860b;padding:7px 10px;margin-top:8px;font-size:11pt;font-weight:700;color:#856404">Notice: An amount of Rs. ${prev.toLocaleString()} has been carried forward from previous month(s). Please settle all dues at the earliest.</div>`:''}
+<table style="width:100%;margin-top:30px;font-size:11pt;font-weight:700;border-top:1px dashed #ccc;padding-top:8px">
   <tr><td style="text-align:center;width:33%">_______________<br>Cashier</td><td style="text-align:center;width:34%">_______________<br>Accounts Officer</td><td style="text-align:right;width:33%">_______________<br>Principal<br><em>${sc.principal||''}</em></td></tr>
 </table>
-<div style="text-align:center;margin-top:10px;font-size:10pt;color:#555;border-top:1px dashed #ddd;padding-top:6px">*** Please pay fee by the 10th of every Nepali month. Late payments may attract fine. ***<br><strong style="font-size:11pt">${sc.name}</strong> | ${sc.addr} | ${sc.phone}</div>
+<div style="text-align:center;margin-top:10px;font-size:10.5pt;font-weight:700;color:#444;border-top:1px dashed #ddd;padding-top:6px">*** Please pay fee by the 10th of every Nepali month. Late payments may attract fine. ***<br><strong style="font-size:12pt">${sc.name}</strong> | ${sc.addr} | ${sc.phone}</div>
 </div>`;
 }
 function prevInv(si,mon,yr){const h=buildInv(si,mon,yr);if(!h){toast('No bill data','err');return;}showPP(`FEE BILL — ${mname(mon)} ${yr} BS`,h);}
