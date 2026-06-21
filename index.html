@@ -114,10 +114,11 @@ tfoot td{background:#1a1a0a;color:#fff;font-weight:700;border-top:2px solid var(
 
 <div id="app">
   <div class="topbar">
-    <div class="tbtt" id="appName">&#127979; SCHOOL MANAGEMENT SYSTEM</div>
+    <div class="tbtt"><span id="topbarLogo"></span><span id="appName">&#127979; SCHOOL MANAGEMENT SYSTEM</span></div>
     <div class="tbr">
       <span class="npd" id="topDate"></span>
       <span style="color:#446">|</span>
+      <span title="Live Sync Status" id="topSyncDot" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#888;border:1px solid #ccc;cursor:default;vertical-align:middle"></span>
       <span id="topUser" style="color:#aac"></span>
       <button class="btn bsm" style="background:#6b0000;color:#fff;border-color:#6b0000" onclick="doLogout()">LOGOUT</button>
     </div>
@@ -180,12 +181,13 @@ tfoot td{background:#1a1a0a;color:#fff;font-weight:700;border-top:2px solid var(
   <div class="fb">
     <div class="fg"><label>SEARCH</label><input type="text" id="stuSrch" placeholder="Name/ID..." oninput="renderStudents()"></div>
     <div class="fg"><label>CLASS</label><select id="stuFC" onchange="renderStudents()"><option value="">All Classes</option></select></div>
+    <div class="fg"><label>CATEGORY</label><select id="stuFCat" onchange="renderStudents()"><option value="">All Categories</option></select></div>
     <div class="fg"><label>STATUS</label><select id="stuFS" onchange="renderStudents()"><option value="">All</option><option>Active</option><option>Inactive</option></select></div>
     <button class="btn bse bsm" onclick="resetSF()">RESET</button>
   </div>
   <input type="file" id="csvIn" accept=".csv" style="display:none" onchange="importCSV(event)">
   <div class="tw"><table>
-    <thead><tr><th>#</th><th>ID</th><th>Name</th><th>Class</th><th>Roll</th><th>Father</th><th>Phone</th><th>Opening Due</th><th>Status</th><th>Action</th></tr></thead>
+    <thead><tr><th>#</th><th>ID</th><th>Name</th><th>Class</th><th>Category</th><th>Roll</th><th>Father</th><th>Phone</th><th>Opening Due</th><th>Status</th><th>Action</th></tr></thead>
     <tbody id="stuTbl"></tbody>
   </table></div>
 </div>
@@ -234,7 +236,7 @@ tfoot td{background:#1a1a0a;color:#fff;font-weight:700;border-top:2px solid var(
 
 <!-- CLASS FEES -->
 <div id="p-clsFees" class="panel">
-  <div class="ph"><h2>&#128181; CLASS WISE FEES SETTING</h2><button class="btn bpr bsm" onclick="openCFM()">+ SET FEES</button></div>
+  <div class="ph"><h2>&#128181; CLASS &amp; CATEGORY WISE FEES SETTING</h2><button class="btn bpr bsm" onclick="openCFM()">+ SET FEES</button></div>
   <div class="tw"><table><thead id="cfHd"></thead><tbody id="cfTbl"></tbody></table></div>
 </div>
 
@@ -269,10 +271,11 @@ tfoot td{background:#1a1a0a;color:#fff;font-weight:700;border-top:2px solid var(
     </div>
     <div class="fg"><label>YEAR (BS)</label><input type="number" id="bYr" value="2081" style="width:82px"></div>
     <div class="fg"><label>CLASS</label><select id="bCls"><option value="">All Classes</option></select></div>
+    <div class="fg"><label>CATEGORY</label><select id="bCat"><option value="">All Categories</option></select></div>
     <button class="btn bpr bsm" onclick="renderBills()">SHOW BILLS</button>
   </div>
   <div class="tw"><table>
-    <thead><tr><th>#</th><th>Student</th><th>Class</th><th>Month</th><th>Prev.Due</th><th>Curr.Fee</th><th>Total Due</th><th>Paid</th><th>Balance</th><th>Status</th><th>Action</th></tr></thead>
+    <thead><tr><th>#</th><th>Student</th><th>Class</th><th>Category</th><th>Month</th><th>Prev.Due</th><th>Curr.Fee</th><th>Total Due</th><th>Paid</th><th>Balance</th><th>Status</th><th>Action</th></tr></thead>
     <tbody id="billTbl"></tbody>
   </table></div>
 </div>
@@ -298,6 +301,7 @@ tfoot td{background:#1a1a0a;color:#fff;font-weight:700;border-top:2px solid var(
   <div class="fb">
     <div class="fg"><label>SELECT STUDENT *</label><select id="ledStu" onchange="renderLedger()"><option value="">-- Select Student --</option></select></div>
     <div class="fg"><label>YEAR (BS)</label><input type="number" id="ledYr" value="2081" style="width:82px" onchange="renderLedger()"></div>
+    <button class="btn bpr bsm" onclick="openLedgerChargeModal()">+ ADD CHARGE TO LEDGER</button>
     <button class="btn bac bsm" onclick="printLedger()">&#128424; PRINT LEDGER</button>
   </div>
   <div id="ledDiv"></div>
@@ -330,7 +334,12 @@ tfoot td{background:#1a1a0a;color:#fff;font-weight:700;border-top:2px solid var(
 
 <!-- RESULTS -->
 <div id="p-results" class="panel">
-  <div class="ph"><h2>&#127941; EXAM RESULTS</h2><button class="btn bac bsm" onclick="printResults()">&#128424; PRINT</button></div>
+  <div class="ph"><h2>&#127941; EXAM RESULTS</h2>
+    <div style="display:flex;gap:6px">
+      <button class="btn bac bsm" onclick="printResults()">&#128424; PRINT RESULT TABLE</button>
+      <button class="btn bpr bsm" onclick="printMarksheets()">&#128424; PRINT MARKSHEETS</button>
+    </div>
+  </div>
   <div class="fb">
     <div class="fg"><label>EXAM</label><select id="rExam" onchange="renderResults()"><option value="">-- Select Exam --</option></select></div>
     <div class="fg"><label>CLASS</label><select id="rCls" onchange="renderResults()"><option value="">-- Select Class --</option></select></div>
@@ -350,15 +359,18 @@ tfoot td{background:#1a1a0a;color:#fff;font-weight:700;border-top:2px solid var(
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:flex-end">
       <div class="fg"><label>YEAR (BS)</label><input type="number" id="rpYr" value="2081" style="width:82px"></div>
       <div class="fg"><label>CLASS</label><select id="rpCls"><option value="">All</option></select></div>
+      <div class="fg"><label>CATEGORY</label><select id="rpCat"><option value="">All</option></select></div>
       <button class="btn bpr bsm" onclick="renderFeeRpt()">SHOW</button>
       <button class="btn bac bsm" onclick="showPP('FEE SUMMARY REPORT',document.getElementById('fRptD').innerHTML)">&#128424; PRINT</button>
     </div>
     <div id="fRptD"></div>
   </div>
   <div id="rpt-def" class="tp">
-    <div style="margin-bottom:10px;display:flex;gap:8px">
-      <button class="btn bpr bsm" onclick="renderDefaulters()">SHOW DEFAULTERS</button>
-      <button class="btn bac bsm" onclick="showPP('DEFAULTER LIST',document.getElementById('defD').innerHTML)">&#128424; PRINT</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:flex-end">
+      <div class="fg"><label>CLASS</label><select id="defFCls"><option value="">All Classes</option></select></div>
+      <div class="fg"><label>CATEGORY</label><select id="defFCat"><option value="">All Categories</option></select></div>
+      <button class="btn bpr bsm" onclick="renderDefaulters()">SHOW DUES LIST</button>
+      <button class="btn bac bsm" onclick="printDuesList()">&#128424; PRINT</button>
     </div>
     <div id="defD"></div>
   </div>
@@ -377,7 +389,7 @@ tfoot td{background:#1a1a0a;color:#fff;font-weight:700;border-top:2px solid var(
 <!-- BACKUP -->
 <div id="p-backup" class="panel">
   <div class="ph"><h2>&#9729; DATA BACKUP — GOOGLE SHEETS</h2></div>
-  <div class="fsec"><div class="fst">GOOGLE APPS SCRIPT WEB APP URL</div>
+  <div class="fsec"><div class="fst">GOOGLE APPS SCRIPT WEB APP URL <span id="gsUrlSourceBadge"></span></div>
     <div class="fg full" style="margin-bottom:10px">
       <label>WEB APP URL (Deploy as Web App from Google Apps Script)</label>
       <input type="url" id="gsUrl" placeholder="https://script.google.com/macros/s/YOUR_ID/exec" style="width:100%">
@@ -387,6 +399,11 @@ tfoot td{background:#1a1a0a;color:#fff;font-weight:700;border-top:2px solid var(
       <button class="btn bok bsm" onclick="testGS()">TEST CONNECTION</button>
     </div>
     <div id="gsTR" style="margin-top:8px"></div>
+    <div style="font-size:9px;color:var(--mu);margin-top:8px;border-top:1px dashed var(--bd2);padding-top:6px">
+      Saving here only stores the URL in <em>this browser</em>. To make EVERY browser/device that opens this file
+      auto-connect to the same live Google Sheet, edit the HTML file and set <code>DEFAULT_GS_URL</code> near the
+      top of the script to your Web App URL, then save and redistribute the file.
+    </div>
   </div>
   <div class="fsec" style="background:#e8f5e9;border-color:var(--ok)"><div class="fst" style="color:var(--ok)">&#128225; REAL-TIME LIVE SYNC (ANY BROWSER / DEVICE)</div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
@@ -453,6 +470,48 @@ tfoot td{background:#1a1a0a;color:#fff;font-weight:700;border-top:2px solid var(
       <button class="btn bok" onclick="saveSetup()">&#128190; SAVE ALL SETTINGS</button>
     </div>
     <div style="min-width:230px">
+      <div class="fsec"><div class="fst">SCHOOL LOGO &amp; SIGNATURES</div>
+        <div style="margin-bottom:12px">
+          <label style="font-size:10px;color:var(--mu);font-weight:700;display:block;margin-bottom:4px">SCHOOL LOGO</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div id="logoPreview" style="width:64px;height:64px;border:2px solid var(--bd2);display:flex;align-items:center;justify-content:center;background:#fff;overflow:hidden;flex-shrink:0">
+              <span style="font-size:28px">&#127979;</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <button class="btn bpr bsm" onclick="document.getElementById('logoIn').click()">UPLOAD LOGO</button>
+              <button class="btn bse bxs" onclick="removeImage('logo')">REMOVE</button>
+            </div>
+          </div>
+          <input type="file" id="logoIn" accept="image/*" style="display:none" onchange="handleImageUpload(event,'logo')">
+        </div>
+        <div style="margin-bottom:12px">
+          <label style="font-size:10px;color:var(--mu);font-weight:700;display:block;margin-bottom:4px">CASHIER SIGNATURE</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div id="cashierSigPreview" style="width:90px;height:44px;border:2px solid var(--bd2);display:flex;align-items:center;justify-content:center;background:#fff;overflow:hidden;flex-shrink:0">
+              <span style="font-size:9px;color:var(--mu)">No signature</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <button class="btn bpr bsm" onclick="document.getElementById('cashierSigIn').click()">UPLOAD SIGN</button>
+              <button class="btn bse bxs" onclick="removeImage('cashierSig')">REMOVE</button>
+            </div>
+          </div>
+          <input type="file" id="cashierSigIn" accept="image/*" style="display:none" onchange="handleImageUpload(event,'cashierSig')">
+        </div>
+        <div style="margin-bottom:4px">
+          <label style="font-size:10px;color:var(--mu);font-weight:700;display:block;margin-bottom:4px">PRINCIPAL SIGNATURE</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div id="principalSigPreview" style="width:90px;height:44px;border:2px solid var(--bd2);display:flex;align-items:center;justify-content:center;background:#fff;overflow:hidden;flex-shrink:0">
+              <span style="font-size:9px;color:var(--mu)">No signature</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <button class="btn bpr bsm" onclick="document.getElementById('principalSigIn').click()">UPLOAD SIGN</button>
+              <button class="btn bse bxs" onclick="removeImage('principalSig')">REMOVE</button>
+            </div>
+          </div>
+          <input type="file" id="principalSigIn" accept="image/*" style="display:none" onchange="handleImageUpload(event,'principalSig')">
+        </div>
+        <div style="font-size:9px;color:var(--mu);margin-top:6px">These appear on printed bills, receipts, and marksheets. Images are stored locally in this browser.</div>
+      </div>
       <div class="fsec"><div class="fst">SUBJECTS</div>
         <div style="display:flex;gap:6px;margin-bottom:8px">
           <input type="text" id="newSub" placeholder="Subject name" style="flex:1;border:1px solid var(--bd2);padding:4px 6px;font-family:var(--fn);font-size:12px">
@@ -482,6 +541,7 @@ tfoot td{background:#1a1a0a;color:#fff;font-weight:700;border-top:2px solid var(
         <div class="fg"><label>STUDENT ID</label><input type="text" id="sId"></div>
         <div class="fg"><label>ROLL NO.</label><input type="number" id="sRo"></div>
         <div class="fg"><label>CLASS *</label><select id="sCl"></select></div>
+        <div class="fg"><label>CATEGORY *</label><select id="sCat"></select></div>
         <div class="fg"><label>GENDER</label><select id="sGn"><option>Male</option><option>Female</option><option>Other</option></select></div>
       </div>
       <div class="fr">
@@ -515,10 +575,11 @@ tfoot td{background:#1a1a0a;color:#fff;font-weight:700;border-top:2px solid var(
 
 <div class="mo" id="mCF">
   <div class="modal" style="min-width:min(480px,95vw)">
-    <div class="mh"><h3>CLASS WISE FEE SETTING</h3><button class="mcl" onclick="closeM('mCF')">&#x2715;</button></div>
+    <div class="mh"><h3>CLASS &amp; CATEGORY WISE FEE SETTING</h3><button class="mcl" onclick="closeM('mCF')">&#x2715;</button></div>
     <div class="mc">
       <div class="fr">
         <div class="fg"><label>CLASS *</label><select id="cfCl" onchange="buildCFH()"></select></div>
+        <div class="fg"><label>CATEGORY *</label><select id="cfCat" onchange="buildCFH()"></select></div>
         <div class="fg"><label>YEAR (BS)</label><input type="number" id="cfYr" value="2081" onchange="buildCFH()"></div>
       </div>
       <div id="cfHD"></div>
@@ -543,6 +604,29 @@ tfoot td{background:#1a1a0a;color:#fff;font-weight:700;border-top:2px solid var(
       <input type="hidden" id="adjIx" value="-1">
     </div>
     <div class="mf"><button class="btn bok" onclick="saveAdj()">SAVE</button><button class="btn bse" onclick="closeM('mAdj')">CANCEL</button></div>
+  </div>
+</div>
+
+<div class="mo" id="mLedCharge">
+  <div class="modal" style="min-width:min(440px,95vw)">
+    <div class="mh"><h3>ADD CHARGE TO LEDGER</h3><button class="mcl" onclick="closeM('mLedCharge')">&#x2715;</button></div>
+    <div class="mc">
+      <div class="fr"><div class="fg full"><label>STUDENT *</label><select id="lcStu" onchange="lcRefreshDue()"></select></div></div>
+      <div class="fr">
+        <div class="fg"><label>CHARGE NAME *</label><input type="text" id="lcName" placeholder="e.g. Book Fee, ID Card, Fine, Transport Deposit"></div>
+        <div class="fg"><label>AMOUNT (Rs.) *</label><input type="number" id="lcAmt" placeholder="0" min="0" oninput="lcRefreshDue()"></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label>DATE (BS) *</label><input type="text" id="lcDate" placeholder="2081-05-12"></div>
+        <div class="fg full"><label>NOTE / REASON</label><input type="text" id="lcNote" placeholder="Optional remarks"></div>
+      </div>
+      <div style="background:#fff3cd;border:1px solid var(--ac);padding:8px 12px;margin-top:6px;font-size:11px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span>Current Outstanding Balance:</span><strong id="lcCurrBal">Rs. 0</strong></div>
+        <div style="display:flex;justify-content:space-between;border-top:1px dashed var(--bd);padding-top:4px"><span>New Balance After This Charge:</span><strong id="lcNewBal" style="color:var(--dg);font-size:13px">Rs. 0</strong></div>
+      </div>
+      <div style="font-size:9.5pt;color:var(--mu);margin-top:6px">This charge is added immediately to the student's ledger as a one-off debit — it is independent of the monthly fee bill and affects their outstanding balance right away.</div>
+    </div>
+    <div class="mf"><button class="btn bok" onclick="saveLedgerCharge()">ADD TO LEDGER</button><button class="btn bse" onclick="closeM('mLedCharge')">CANCEL</button></div>
   </div>
 </div>
 
@@ -571,8 +655,9 @@ tfoot td{background:#1a1a0a;color:#fff;font-weight:700;border-top:2px solid var(
       </div>
       <div class="fr">
         <div class="fg"><label>AMOUNT RECEIVED *</label><input type="number" id="rcpA" placeholder="0" oninput="calcBal()"></div>
-        <div class="fg"><label>BALANCE</label><input type="number" id="rcpBl" readonly style="background:#f5f5dc"></div>
+        <div class="fg"><label>DUES TILL THIS MONTH</label><input type="number" id="rcpBl" readonly style="background:#f5f5dc"></div>
       </div>
+      <div style="font-size:9px;color:var(--mu);margin-top:-6px;margin-bottom:8px">Dues = Previous Due + This Month Bill &minus; Discount &minus; Cash Paid</div>
       <div class="fr">
         <div class="fg"><label>PAYMENT MODE</label><select id="rcpMd"><option>Cash</option><option>Cheque</option><option>Online Transfer</option><option>Fonepay</option><option>eSewa</option></select></div>
         <div class="fg"><label>DATE (BS)</label><input type="text" id="rcpD" placeholder="2081-01-15"></div>
@@ -588,9 +673,52 @@ tfoot td{background:#1a1a0a;color:#fff;font-weight:700;border-top:2px solid var(
   </div>
 </div>
 
-<div class="mo" id="mExam">
+<div class="mo" id="mBillEdit">
+  <div class="modal" style="min-width:min(520px,95vw)">
+    <div class="mh"><h3 id="billEditTitle">EDIT THIS MONTH'S BILL</h3><button class="mcl" onclick="closeM('mBillEdit')">&#x2715;</button></div>
+    <div class="mc">
+      <div style="font-size:11px;color:var(--mu);margin-bottom:10px" id="billEditSub"></div>
+
+      <div class="fsec" style="background:#e8f0ff;border-color:var(--pr)">
+        <div class="fst" style="color:var(--pr)">PER-MONTH FEE OVERRIDE (THIS STUDENT, THIS MONTH ONLY)</div>
+        <div class="fr" style="margin-bottom:0;align-items:center">
+          <label style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;cursor:pointer;min-width:auto">
+            <input type="checkbox" id="beUseOverride" onchange="toggleBillOverride()" style="width:15px;height:15px;cursor:pointer">
+            CHARGE A DIFFERENT EXACT AMOUNT THIS MONTH
+          </label>
+        </div>
+        <div class="fr" id="beOverrideRow" style="display:none;margin-top:8px">
+          <div class="fg"><label>EXACT AMOUNT (Rs.)</label><input type="number" id="beOverrideAmt" placeholder="e.g. 300" min="0"></div>
+          <div class="fg full"><label>NOTE / REASON</label><input type="text" id="beOverrideNote" placeholder="e.g. Partial payment arrangement"></div>
+        </div>
+        <div style="font-size:9.5pt;color:var(--mu);margin-top:4px">This replaces the normal class fee total for this student for this month only — it does not change other months or other students.</div>
+      </div>
+
+      <div class="fsec" style="background:#fff8e1;border-color:var(--ac)">
+        <div class="fst" style="color:#856404">EXTRA CHARGES THIS MONTH (Misc Fee, Dress, etc.)</div>
+        <div id="beExtrasList" style="margin-bottom:8px"></div>
+        <div class="fr" style="margin-bottom:0;align-items:flex-end">
+          <div class="fg"><label>CHARGE NAME</label><input type="text" id="beExtraName" placeholder="e.g. Dress Fee"></div>
+          <div class="fg"><label>AMOUNT (Rs.)</label><input type="number" id="beExtraAmt" placeholder="0" min="0" style="width:90px"></div>
+          <button class="btn bpr bsm" onclick="addExtraCharge()" style="height:fit-content">+ ADD</button>
+        </div>
+        <div style="font-size:9.5pt;color:#856404;margin-top:4px">These are one-time charges added on top of this month's bill — e.g. Dress Fee, Misc Fee, Picnic Fee, Lab Breakage, etc.</div>
+      </div>
+
+      <input type="hidden" id="beStuId" value="">
+      <input type="hidden" id="beMon" value="">
+      <input type="hidden" id="beYr" value="">
+    </div>
+    <div class="mf">
+      <button class="btn bok" onclick="saveBillEdit()">SAVE &amp; REGENERATE BILL</button>
+      <button class="btn bse" onclick="closeM('mBillEdit')">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<div class="mo" id="mExamModal">
   <div class="modal" style="min-width:min(440px,95vw)">
-    <div class="mh"><h3 id="examMT">ADD EXAM</h3><button class="mcl" onclick="closeM('mExam')">&#x2715;</button></div>
+    <div class="mh"><h3 id="examMT">ADD EXAM</h3><button class="mcl" onclick="closeM('mExamModal')">&#x2715;</button></div>
     <div class="mc">
       <div class="fr"><div class="fg full"><label>EXAM NAME *</label><input type="text" id="exNm" placeholder="e.g. First Terminal Examination"></div></div>
       <div class="fr">
@@ -604,7 +732,7 @@ tfoot td{background:#1a1a0a;color:#fff;font-weight:700;border-top:2px solid var(
       </div>
       <input type="hidden" id="exIx" value="-1">
     </div>
-    <div class="mf"><button class="btn bok" onclick="saveExam()">SAVE</button><button class="btn bse" onclick="closeM('mExam')">CANCEL</button></div>
+    <div class="mf"><button class="btn bok" onclick="saveExam()">SAVE</button><button class="btn bse" onclick="closeM('mExamModal')">CANCEL</button></div>
   </div>
 </div>
 
@@ -626,6 +754,25 @@ tfoot td{background:#1a1a0a;color:#fff;font-weight:700;border-top:2px solid var(
 // NEPALI DATE ENGINE — Accurate BS calendar 2075-2092
 // =====================================================
 const NM=['Baisakh','Jestha','Ashadh','Shrawan','Bhadra','Ashwin','Kartik','Mangsir','Poush','Magh','Falgun','Chaitra'];
+const CATEGORIES=['Boarder','Dayboarder','One Time Dayboarder'];
+
+/* ============================================================
+   LIVE SERVER CONFIGURATION — Google Apps Script Web App URL
+   ============================================================
+   Paste your deployed Google Apps Script Web App URL below
+   (must end in /exec). Once set here, EVERY browser/device that
+   opens this same HTML file will automatically connect to the
+   same live Google Sheet — no manual setup needed per device.
+
+   Leave as '' (empty string) if you don't want a baked-in URL;
+   in that case users can still paste their own URL inside the
+   app under Data Backup → Google Apps Script Web App URL.
+
+   Example:
+   const DEFAULT_GS_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
+   ============================================================ */
+const DEFAULT_GS_URL = 'https://script.google.com/macros/s/AKfycbz_N23L3y6AoKVye5TCzsxGsMnWWj_iNqz1IBnp8tTq9OxFwGKGK3v07-EooEnybFgL/exec';
+
 const BC={
   2075:[31,31,32,32,31,30,30,29,30,29,30,30],
   2076:[31,32,31,32,31,30,30,29,30,29,30,30],
@@ -666,9 +813,16 @@ function n2w(n){const a=['','One','Two','Three','Four','Five','Six','Seven','Eig
 // =====================================================
 const LS={g(k){try{return JSON.parse(localStorage.getItem('sms3_'+k))||null;}catch{return null;}},s(k,v){localStorage.setItem('sms3_'+k,JSON.stringify(v));}};
 const D={
-  cfg:LS.g('cfg')||{name:'Vidhya Vikash Secondary Boarding School',addr:'Kathmandu, Bagmati Province, Nepal',dist:'Kathmandu',prov:'Bagmati Province',phone:'01-4XXXXXX',email:'info@school.edu.np',reg:'REG-2045/001',pan:'123456789',principal:'',year:2081,uname:'admin',pwd:'admin123',rcpPfx:'RCP',billPfx:'BILL',stuPfx:'STU',gsUrl:''},
-  stu:LS.g('stu')||[],cls:LS.g('cls')||[],feeH:LS.g('feeH')||[],cFees:LS.g('cFees')||[],adjs:LS.g('adjs')||[],bills:LS.g('bills')||[],rcps:LS.g('rcps')||[],exams:LS.g('exams')||[],marks:LS.g('marks')||[],bkLog:LS.g('bkLog')||[],subs:LS.g('subs')||['Nepali','English','Mathematics','Science','Social Studies','Computer']
+  cfg:LS.g('cfg')||{name:'Vidhya Vikash Secondary Boarding School',addr:'Kathmandu, Bagmati Province, Nepal',dist:'Kathmandu',prov:'Bagmati Province',phone:'01-4XXXXXX',email:'info@school.edu.np',reg:'REG-2045/001',pan:'123456789',principal:'',year:2081,uname:'admin',pwd:'admin123',rcpPfx:'RCP',billPfx:'BILL',stuPfx:'STU',gsUrl:DEFAULT_GS_URL,liveSync:!!DEFAULT_GS_URL},
+  stu:LS.g('stu')||[],cls:LS.g('cls')||[],feeH:LS.g('feeH')||[],cFees:LS.g('cFees')||[],adjs:LS.g('adjs')||[],bills:LS.g('bills')||[],rcps:LS.g('rcps')||[],exams:LS.g('exams')||[],marks:LS.g('marks')||[],bkLog:LS.g('bkLog')||[],billOv:LS.g('billOv')||[],extras:LS.g('extras')||[],ledCharges:LS.g('ledCharges')||[],subs:LS.g('subs')||['Nepali','English','Mathematics','Science','Social Studies','Computer']
 };
+// Migration: if this browser already had a saved config (from before a baked-in URL was
+// set in this file) and it has no Google Sheets URL yet, apply the baked-in default so
+// existing installs also pick up live-server connectivity automatically.
+if(DEFAULT_GS_URL && !D.cfg.gsUrl){
+  D.cfg.gsUrl=DEFAULT_GS_URL;
+  D.cfg.liveSync=true;
+}
 function sv(k){LS.s(k,D[k]);}
 
 // =====================================================
@@ -680,7 +834,7 @@ function doLogin(){
   else{const e=document.getElementById('loginErr');e.style.display='block';setTimeout(()=>e.style.display='none',3000);}
 }
 document.getElementById('lPass').addEventListener('keypress',e=>{if(e.key==='Enter')doLogin();});
-function doLogout(){if(!confirm('Logout?'))return;stopAutoSave();document.getElementById('loginScreen').style.display='flex';document.getElementById('app').style.display='none';document.getElementById('lPass').value='';}
+function doLogout(){if(!confirm('Logout?'))return;stopLiveSync();document.getElementById('loginScreen').style.display='flex';document.getElementById('app').style.display='none';document.getElementById('lPass').value='';}
 
 // =====================================================
 // INIT
@@ -689,7 +843,7 @@ function initApp(){
   const b=adToBS(new Date());
   document.getElementById('topDate').textContent=`${b.d} ${NM[b.m-1]} ${b.y} BS`;
   document.getElementById('dashDate').textContent=`Today: ${b.d} ${NM[b.m-1]} ${b.y} BS`;
-  applyCfg();fillDDs();renderDashboard();initAutoSaveUI();
+  applyCfg();fillDDs();renderDashboard();initLiveSyncUI();
   document.getElementById('bMon').value=String(b.m);
   document.getElementById('bYr').value=String(b.y);
   document.getElementById('rcpY').value=String(b.y);
@@ -697,12 +851,61 @@ function initApp(){
   document.getElementById('rcpD').value=todayBS();
 }
 function applyCfg(){
-  document.getElementById('appName').textContent='🏫 '+D.cfg.name;
+  document.getElementById('appName').textContent=(D.cfg.logo?'':'🏫 ')+D.cfg.name;
   document.getElementById('lsName').textContent=D.cfg.name;
   const m={stNm:'name',stAd:'addr',stDi:'dist',stPv:'prov',stPh:'phone',stEm:'email',stRg:'reg',stPn:'pan',stYr:'year',stPr:'principal',stUn:'uname',stRP:'rcpPfx',stBP:'billPfx',stSP:'stuPfx'};
   Object.entries(m).forEach(([id,k])=>{const el=document.getElementById(id);if(el)el.value=D.cfg[k]||'';});
   document.getElementById('gsUrl').value=D.cfg.gsUrl||'';
+  const badge=document.getElementById('gsUrlSourceBadge');
+  if(badge){
+    if(DEFAULT_GS_URL&&D.cfg.gsUrl===DEFAULT_GS_URL){
+      badge.innerHTML='<span class="badge bok2" style="font-size:9px">BUILT INTO THIS FILE</span>';
+    } else if(D.cfg.gsUrl){
+      badge.innerHTML='<span class="badge binf" style="font-size:9px">MANUALLY SET</span>';
+    } else {
+      badge.innerHTML='';
+    }
+  }
   renderSubs();
+  renderImagePreviews();
+}
+
+// --- Logo & Signature image uploads (stored as base64 data URLs in localStorage) ---
+function handleImageUpload(e,key){
+  const f=e.target.files[0];if(!f)return;
+  if(!f.type.startsWith('image/')){toast('Please select an image file','err');return;}
+  if(f.size>1500000){toast('Image too large — please use one under 1.5MB','err');return;}
+  const r=new FileReader();
+  r.onload=ev=>{
+    D.cfg[key]=ev.target.result;
+    sv('cfg');
+    renderImagePreviews();
+    toast((key==='logo'?'Logo':key==='cashierSig'?'Cashier signature':'Principal signature')+' uploaded');
+  };
+  r.readAsDataURL(f);
+  e.target.value='';
+}
+function removeImage(key){
+  if(!D.cfg[key]){toast('Nothing to remove','err');return;}
+  if(!confirm('Remove this image?'))return;
+  delete D.cfg[key];
+  sv('cfg');
+  renderImagePreviews();
+  toast('Removed');
+}
+function renderImagePreviews(){
+  const lp=document.getElementById('logoPreview');
+  if(lp)lp.innerHTML=D.cfg.logo?`<img src="${D.cfg.logo}" style="width:100%;height:100%;object-fit:contain">`:'<span style="font-size:28px">&#127979;</span>';
+  const cs=document.getElementById('cashierSigPreview');
+  if(cs)cs.innerHTML=D.cfg.cashierSig?`<img src="${D.cfg.cashierSig}" style="width:100%;height:100%;object-fit:contain">`:'<span style="font-size:9px;color:var(--mu)">No signature</span>';
+  const ps=document.getElementById('principalSigPreview');
+  if(ps)ps.innerHTML=D.cfg.principalSig?`<img src="${D.cfg.principalSig}" style="width:100%;height:100%;object-fit:contain">`:'<span style="font-size:9px;color:var(--mu)">No signature</span>';
+  // Update topbar logo too
+  const tbLogo=document.getElementById('topbarLogo');
+  if(tbLogo){
+    if(D.cfg.logo){tbLogo.innerHTML=`<img src="${D.cfg.logo}" style="height:22px;vertical-align:middle;margin-right:6px">`;}
+    else{tbLogo.innerHTML='';}
+  }
 }
 
 // =====================================================
@@ -715,7 +918,7 @@ function nav(nm){
   const b=Array.from(document.querySelectorAll('.ni')).find(x=>x.getAttribute('onclick')?.includes("'"+nm+"'"));
   if(b)b.classList.add('active');
   fillDDs();
-  const r={dashboard:renderDashboard,students:renderStudents,classes:renderCls,feeH:renderFH,clsFees:renderCF,feeAdj:renderAdj,billing:renderBills,receipts:renderRcps,exams:renderExams,backup:()=>{renderBkLog();initAutoSaveUI();},setup:applyCfg};
+  const r={dashboard:renderDashboard,students:renderStudents,classes:renderCls,feeH:renderFH,clsFees:renderCF,feeAdj:renderAdj,billing:renderBills,receipts:renderRcps,exams:renderExams,backup:()=>{renderBkLog();initLiveSyncUI();},setup:applyCfg};
   if(r[nm])r[nm]();
 }
 function stab(g,t){
@@ -730,16 +933,22 @@ function closeM(id){document.getElementById(id).classList.remove('open');}
 // DROPDOWNS
 // =====================================================
 function fillDDs(){
-  ['stuFC','sCl','bCls','cfCl','rpCls','mCls','rCls','exCl'].forEach(id=>{
+  ['stuFC','sCl','bCls','cfCl','rpCls','mCls','rCls','exCl','defFCls'].forEach(id=>{
     const el=document.getElementById(id);if(!el)return;const v=el.value;
-    el.innerHTML=['stuFC','bCls','rpCls','exCl'].includes(id)?'<option value="">All Classes</option>':'';
+    el.innerHTML=['stuFC','bCls','rpCls','exCl','defFCls'].includes(id)?'<option value="">All Classes</option>':'';
     D.cls.forEach(c=>el.innerHTML+=`<option value="${c.id}">${c.n}${c.s?' '+c.s:''}</option>`);
     el.value=v;
   });
-  ['adjFS','adjS','rcpFS','rcpS','ledStu'].forEach(id=>{
+  ['stuFCat','sCat','bCat','cfCat','rpCat','defFCat'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;const v=el.value;
+    el.innerHTML=['stuFCat','bCat','rpCat','defFCat'].includes(id)?'<option value="">All Categories</option>':'';
+    CATEGORIES.forEach(cat=>el.innerHTML+=`<option value="${cat}">${cat}</option>`);
+    el.value=v;
+  });
+  ['adjFS','adjS','rcpFS','rcpS','ledStu','lcStu'].forEach(id=>{
     const el=document.getElementById(id);if(!el)return;const v=el.value;
     el.innerHTML=['adjFS','rcpFS','ledStu'].includes(id)?'<option value="">-- Select --</option>':'<option value="">-- Select Student --</option>';
-    D.stu.filter(s=>s.st==='Active').forEach(s=>{const c=D.cls.find(x=>x.id===s.ci);el.innerHTML+=`<option value="${s.id}">${s.nm} (${c?c.n+(c.s?' '+c.s:''):''})</option>`;});
+    D.stu.filter(s=>s.st==='Active').forEach(s=>{const c=D.cls.find(x=>x.id===s.ci);el.innerHTML+=`<option value="${s.id}">${s.nm} (${c?c.n+(c.s?' '+c.s:''):''}${s.cat?' — '+s.cat:''})</option>`;});
     el.value=v;
   });
   const ah=document.getElementById('adjH');if(ah){ah.innerHTML='';D.feeH.forEach(h=>ah.innerHTML+=`<option value="${h.id}">${h.n}</option>`);}
@@ -764,30 +973,33 @@ function renderDashboard(){
 function getStuBal(id){
   const s=D.stu.find(x=>x.id===id);
   const opd=s?(+s.opd||0):0;
-  return opd+D.bills.filter(b=>b.si===id).reduce((a,b)=>a+(+b.tot),0)-D.rcps.filter(r=>r.si===id).reduce((a,r)=>a+(+r.a),0);
+  const billed=D.bills.filter(b=>b.si===id).reduce((a,b)=>a+(+b.tot),0);
+  const ledCh=D.ledCharges.filter(x=>x.si===id).reduce((a,x)=>a+(+x.amt||0),0);
+  const paidPlusDisc=D.rcps.filter(r=>r.si===id).reduce((a,r)=>a+(+r.a)+(+r.disc||0),0);
+  return opd+billed+ledCh-paidPlusDisc;
 }
 
 // =====================================================
 // STUDENTS
 // =====================================================
 let _si=-1;
-function openAddStu(){_si=-1;document.getElementById('stuMT').textContent='ADD STUDENT';['sFn','sMn','sLn','sRo','sFt','sMt','sPh','sAr','sDb','sRm','sOpd','sOpdYr','sOpdRm'].forEach(id=>document.getElementById(id).value='');document.getElementById('sId').value=genSId();document.getElementById('sAd').value=todayBS();document.getElementById('sSt').value='Active';document.getElementById('sIx').value=-1;fillDDs();openM('mStu');}
+function openAddStu(){_si=-1;document.getElementById('stuMT').textContent='ADD STUDENT';['sFn','sMn','sLn','sRo','sFt','sMt','sPh','sAr','sDb','sRm','sOpd','sOpdYr','sOpdRm'].forEach(id=>document.getElementById(id).value='');document.getElementById('sId').value=genSId();document.getElementById('sAd').value=todayBS();document.getElementById('sSt').value='Active';document.getElementById('sCat').value='Dayboarder';document.getElementById('sIx').value=-1;fillDDs();openM('mStu');}
 function genSId(){return`${D.cfg.stuPfx||'STU'}-${String(D.stu.length+1).padStart(4,'0')}`;}
 function saveStu(){
   const fn=document.getElementById('sFn').value.trim(),ln=document.getElementById('sLn').value.trim();
   if(!fn||!ln){toast('First and Last name required','err');return;}
   const ix=parseInt(document.getElementById('sIx').value);
-  const s={id:document.getElementById('sId').value||genSId(),nm:[fn,document.getElementById('sMn').value.trim(),ln].filter(Boolean).join(' '),fn,mn:document.getElementById('sMn').value.trim(),ln,ro:document.getElementById('sRo').value,ci:document.getElementById('sCl').value,db:document.getElementById('sDb').value,gn:document.getElementById('sGn').value,ad:document.getElementById('sAd').value,ft:document.getElementById('sFt').value,mt:document.getElementById('sMt').value,ph:document.getElementById('sPh').value,ar:document.getElementById('sAr').value,st:document.getElementById('sSt').value,rm:document.getElementById('sRm').value,opd:parseFloat(document.getElementById('sOpd').value)||0,opdYr:document.getElementById('sOpdYr').value,opdRm:document.getElementById('sOpdRm').value};
+  const s={id:document.getElementById('sId').value||genSId(),nm:[fn,document.getElementById('sMn').value.trim(),ln].filter(Boolean).join(' '),fn,mn:document.getElementById('sMn').value.trim(),ln,ro:document.getElementById('sRo').value,ci:document.getElementById('sCl').value,cat:document.getElementById('sCat').value,db:document.getElementById('sDb').value,gn:document.getElementById('sGn').value,ad:document.getElementById('sAd').value,ft:document.getElementById('sFt').value,mt:document.getElementById('sMt').value,ph:document.getElementById('sPh').value,ar:document.getElementById('sAr').value,st:document.getElementById('sSt').value,rm:document.getElementById('sRm').value,opd:parseFloat(document.getElementById('sOpd').value)||0,opdYr:document.getElementById('sOpdYr').value,opdRm:document.getElementById('sOpdRm').value};
   if(ix>=0)D.stu[ix]=s;else D.stu.push(s);sv('stu');closeM('mStu');renderStudents();renderDashboard();toast('Student saved');
 }
 function renderStudents(){
-  const sr=(document.getElementById('stuSrch')?.value||'').toLowerCase(),cf=document.getElementById('stuFC')?.value||'',sf=document.getElementById('stuFS')?.value||'';
-  const list=D.stu.filter(s=>(!sr||s.nm.toLowerCase().includes(sr)||s.id.toLowerCase().includes(sr))&&(!cf||s.ci===cf)&&(!sf||s.st===sf));
-  document.getElementById('stuTbl').innerHTML=list.map((s,i)=>{const c=D.cls.find(x=>x.id===s.ci);return`<tr><td>${i+1}</td><td>${s.id}</td><td><strong>${s.nm}</strong></td><td>${c?c.n+(c.s?' '+c.s:''):'-'}</td><td>${s.ro||'-'}</td><td>${s.ft||'-'}</td><td>${s.ph||'-'}</td><td>${(+s.opd||0)>0?`<span class="badge bwrn">Rs.${(+s.opd).toLocaleString()}</span>`:'-'}</td><td><span class="badge ${s.st==='Active'?'bok2':'berr'}">${s.st}</span></td><td><button class="btn bxs bse" onclick="editStu(${D.stu.indexOf(s)})">EDIT</button> <button class="btn bxs bdg" onclick="delStu(${D.stu.indexOf(s)})">DEL</button></td></tr>`;}).join('')||`<tr><td colspan="10" style="text-align:center;color:var(--mu);padding:12px">No students found</td></tr>`;
+  const sr=(document.getElementById('stuSrch')?.value||'').toLowerCase(),cf=document.getElementById('stuFC')?.value||'',catf=document.getElementById('stuFCat')?.value||'',sf=document.getElementById('stuFS')?.value||'';
+  const list=D.stu.filter(s=>(!sr||s.nm.toLowerCase().includes(sr)||s.id.toLowerCase().includes(sr))&&(!cf||s.ci===cf)&&(!catf||s.cat===catf)&&(!sf||s.st===sf));
+  document.getElementById('stuTbl').innerHTML=list.map((s,i)=>{const c=D.cls.find(x=>x.id===s.ci);return`<tr><td>${i+1}</td><td>${s.id}</td><td><strong>${s.nm}</strong></td><td>${c?c.n+(c.s?' '+c.s:''):'-'}</td><td><span class="badge binf">${s.cat||'-'}</span></td><td>${s.ro||'-'}</td><td>${s.ft||'-'}</td><td>${s.ph||'-'}</td><td>${(+s.opd||0)>0?`<span class="badge bwrn">Rs.${(+s.opd).toLocaleString()}</span>`:'-'}</td><td><span class="badge ${s.st==='Active'?'bok2':'berr'}">${s.st}</span></td><td><button class="btn bxs bse" onclick="editStu(${D.stu.indexOf(s)})">EDIT</button> <button class="btn bxs bdg" onclick="delStu(${D.stu.indexOf(s)})">DEL</button></td></tr>`;}).join('')||`<tr><td colspan="11" style="text-align:center;color:var(--mu);padding:12px">No students found</td></tr>`;
 }
-function editStu(ix){const s=D.stu[ix];document.getElementById('stuMT').textContent='EDIT STUDENT';document.getElementById('sIx').value=ix;document.getElementById('sId').value=s.id;document.getElementById('sFn').value=s.fn||s.nm.split(' ')[0];document.getElementById('sMn').value=s.mn||'';document.getElementById('sLn').value=s.ln||s.nm.split(' ').slice(-1)[0];document.getElementById('sRo').value=s.ro||'';document.getElementById('sCl').value=s.ci||'';document.getElementById('sDb').value=s.db||'';document.getElementById('sGn').value=s.gn||'Male';document.getElementById('sAd').value=s.ad||'';document.getElementById('sFt').value=s.ft||'';document.getElementById('sMt').value=s.mt||'';document.getElementById('sPh').value=s.ph||'';document.getElementById('sAr').value=s.ar||'';document.getElementById('sSt').value=s.st||'Active';document.getElementById('sRm').value=s.rm||'';document.getElementById('sOpd').value=s.opd||'';document.getElementById('sOpdYr').value=s.opdYr||'';document.getElementById('sOpdRm').value=s.opdRm||'';openM('mStu');}
+function editStu(ix){const s=D.stu[ix];document.getElementById('stuMT').textContent='EDIT STUDENT';document.getElementById('sIx').value=ix;document.getElementById('sId').value=s.id;document.getElementById('sFn').value=s.fn||s.nm.split(' ')[0];document.getElementById('sMn').value=s.mn||'';document.getElementById('sLn').value=s.ln||s.nm.split(' ').slice(-1)[0];document.getElementById('sRo').value=s.ro||'';document.getElementById('sCl').value=s.ci||'';document.getElementById('sCat').value=s.cat||'Dayboarder';document.getElementById('sDb').value=s.db||'';document.getElementById('sGn').value=s.gn||'Male';document.getElementById('sAd').value=s.ad||'';document.getElementById('sFt').value=s.ft||'';document.getElementById('sMt').value=s.mt||'';document.getElementById('sPh').value=s.ph||'';document.getElementById('sAr').value=s.ar||'';document.getElementById('sSt').value=s.st||'Active';document.getElementById('sRm').value=s.rm||'';document.getElementById('sOpd').value=s.opd||'';document.getElementById('sOpdYr').value=s.opdYr||'';document.getElementById('sOpdRm').value=s.opdRm||'';openM('mStu');}
 function delStu(ix){if(!confirm('Delete student?'))return;D.stu.splice(ix,1);sv('stu');renderStudents();renderDashboard();}
-function resetSF(){['stuSrch','stuFC','stuFS'].forEach(id=>document.getElementById(id).value='');renderStudents();}
+function resetSF(){['stuSrch','stuFC','stuFCat','stuFS'].forEach(id=>document.getElementById(id).value='');renderStudents();}
 function importCSV(e){
   const f=e.target.files[0];if(!f)return;
   if(!f.name.endsWith('.csv')){alert('Use CSV format. Export as CSV from Excel first.');e.target.value='';return;}
@@ -796,7 +1008,8 @@ function importCSV(e){
     for(let i=1;i<lines.length;i++){const cols=lines[i].split(',').map(c=>c.trim().replace(/^"|"$/g,''));if(!cols[0])continue;
       const gc=(...ks)=>{for(const k of ks){const x=hdr.findIndex(h=>h.includes(k));if(x>=0&&cols[x])return cols[x];}return'';};
       const nm=gc('name','student')||cols[0];const cn=gc('class');const ci=D.cls.find(c=>c.n.toLowerCase()===cn.toLowerCase())?.id||D.cls[0]?.id||'';
-      D.stu.push({id:`${D.cfg.stuPfx||'STU'}-${String(D.stu.length+1).padStart(4,'0')}`,nm,fn:nm.split(' ')[0],mn:'',ln:nm.split(' ').slice(-1)[0],ro:gc('roll'),ci,ft:gc('father','guardian'),ph:gc('phone','mobile'),db:gc('dob','birth'),ad:todayBS(),gn:gc('gender')||'Male',ar:gc('address'),st:'Active',rm:''});add++;}
+      const catRaw=gc('category','cat');const cat=CATEGORIES.find(c=>c.toLowerCase()===catRaw.toLowerCase())||CATEGORIES[1];
+      D.stu.push({id:`${D.cfg.stuPfx||'STU'}-${String(D.stu.length+1).padStart(4,'0')}`,nm,fn:nm.split(' ')[0],mn:'',ln:nm.split(' ').slice(-1)[0],ro:gc('roll'),ci,cat,ft:gc('father','guardian'),ph:gc('phone','mobile'),db:gc('dob','birth'),ad:todayBS(),gn:gc('gender')||'Male',ar:gc('address'),st:'Active',rm:''});add++;}
     sv('stu');renderStudents();renderDashboard();toast(`Imported ${add} students`);
   };r.readAsText(f);e.target.value='';
 }
@@ -825,12 +1038,11 @@ function delFH(ix){if(!confirm('Delete?'))return;D.feeH.splice(ix,1);sv('feeH');
 // CLASS FEES
 // =====================================================
 function openCFM(){fillDDs();buildCFH();openM('mCF');}
-function buildCFH(){const ci=document.getElementById('cfCl').value,yr=document.getElementById('cfYr').value,ex=D.cFees.find(f=>f.ci===ci&&f.yr==yr);document.getElementById('cfHD').innerHTML=D.feeH.length===0?'<div class="alert ainf">Add fee headings first.</div>':D.feeH.map(h=>`<div style="display:flex;gap:10px;align-items:center;margin-bottom:7px"><div style="flex:2;font-size:11px;font-weight:700">${h.n} <span style="color:var(--mu)">(${h.tp})</span></div><div class="fg"><label>Rs./${h.tp==='Yearly'?'Year':'Month'}</label><input type="number" id="cf_${h.id}" value="${ex?.f?.[h.id]||0}" style="width:100px"></div></div>`).join('');}
-document.getElementById('cfCl').addEventListener('change',buildCFH);document.getElementById('cfYr').addEventListener('change',buildCFH);
-function saveCF(){const ci=document.getElementById('cfCl').value,yr=document.getElementById('cfYr').value;if(!ci){toast('Select a class','err');return;}const f={};D.feeH.forEach(h=>{f[h.id]=parseFloat(document.getElementById('cf_'+h.id)?.value)||0;});const ix=D.cFees.findIndex(x=>x.ci===ci&&x.yr==yr);const e={id:ix>=0?D.cFees[ix].id:'CF'+Date.now(),ci,yr,f};if(ix>=0)D.cFees[ix]=e;else D.cFees.push(e);sv('cFees');closeM('mCF');renderCF();toast('Class fees saved');}
+function buildCFH(){const ci=document.getElementById('cfCl').value,cat=document.getElementById('cfCat').value,yr=document.getElementById('cfYr').value,ex=D.cFees.find(f=>f.ci===ci&&f.cat===cat&&f.yr==yr);document.getElementById('cfHD').innerHTML=D.feeH.length===0?'<div class="alert ainf">Add fee headings first.</div>':D.feeH.map(h=>`<div style="display:flex;gap:10px;align-items:center;margin-bottom:7px"><div style="flex:2;font-size:11px;font-weight:700">${h.n} <span style="color:var(--mu)">(${h.tp})</span></div><div class="fg"><label>Rs./${h.tp==='Yearly'?'Year':'Month'}</label><input type="number" id="cf_${h.id}" value="${ex?.f?.[h.id]||0}" style="width:100px"></div></div>`).join('');}
+function saveCF(){const ci=document.getElementById('cfCl').value,cat=document.getElementById('cfCat').value,yr=document.getElementById('cfYr').value;if(!ci){toast('Select a class','err');return;}if(!cat){toast('Select a category','err');return;}const f={};D.feeH.forEach(h=>{f[h.id]=parseFloat(document.getElementById('cf_'+h.id)?.value)||0;});const ix=D.cFees.findIndex(x=>x.ci===ci&&x.cat===cat&&x.yr==yr);const e={id:ix>=0?D.cFees[ix].id:'CF'+Date.now(),ci,cat,yr,f};if(ix>=0)D.cFees[ix]=e;else D.cFees.push(e);sv('cFees');closeM('mCF');renderCF();toast('Class & category fees saved');}
 function renderCF(){
-  document.getElementById('cfHd').innerHTML=`<tr><th>Class</th><th>Year</th>${D.feeH.map(h=>`<th>${h.n}</th>`).join('')}<th>Total/Month</th><th>Action</th></tr>`;
-  document.getElementById('cfTbl').innerHTML=D.cFees.map(f=>{const c=D.cls.find(x=>x.id===f.ci);const mo=D.feeH.reduce((a,h)=>{const v=f.f?.[h.id]||0;return a+(h.tp==='Yearly'?Math.round(v/12):h.tp==='One-time'?0:v);},0);return`<tr><td><strong>${c?c.n+(c.s?' '+c.s:''):'?'}</strong></td><td>${f.yr}</td>${D.feeH.map(h=>`<td>Rs.${f.f?.[h.id]||0}${h.tp==='Yearly'?`<br><span style="font-size:9px;color:var(--mu)">(Rs.${Math.round((f.f?.[h.id]||0)/12)}/mo)</span>`:''}</td>`).join('')}<td><strong>Rs.${mo}/mo</strong></td><td><button class="btn bxs bdg" onclick="delCF('${f.id}')">DEL</button></td></tr>`;}).join('')||`<tr><td colspan="${D.feeH.length+4}" style="text-align:center;color:var(--mu);padding:12px">No class fees set</td></tr>`;
+  document.getElementById('cfHd').innerHTML=`<tr><th>Class</th><th>Category</th><th>Year</th>${D.feeH.map(h=>`<th>${h.n}</th>`).join('')}<th>Total/Month</th><th>Action</th></tr>`;
+  document.getElementById('cfTbl').innerHTML=D.cFees.map(f=>{const c=D.cls.find(x=>x.id===f.ci);const mo=D.feeH.reduce((a,h)=>{const v=f.f?.[h.id]||0;return a+(h.tp==='Yearly'?Math.round(v/12):h.tp==='One-time'?0:v);},0);return`<tr><td><strong>${c?c.n+(c.s?' '+c.s:''):'?'}</strong></td><td><span class="badge binf">${f.cat||'-'}</span></td><td>${f.yr}</td>${D.feeH.map(h=>`<td>Rs.${f.f?.[h.id]||0}${h.tp==='Yearly'?`<br><span style="font-size:9px;color:var(--mu)">(Rs.${Math.round((f.f?.[h.id]||0)/12)}/mo)</span>`:''}</td>`).join('')}<td><strong>Rs.${mo}/mo</strong></td><td><button class="btn bxs bdg" onclick="delCF('${f.id}')">DEL</button></td></tr>`;}).join('')||`<tr><td colspan="${D.feeH.length+5}" style="text-align:center;color:var(--mu);padding:12px">No class/category fees set</td></tr>`;
 }
 function delCF(id){if(!confirm('Delete?'))return;D.cFees=D.cFees.filter(f=>f.id!==id);sv('cFees');renderCF();}
 
@@ -847,7 +1059,12 @@ function delAdj(ix){if(!confirm('Delete?'))return;D.adjs.splice(ix,1);sv('adjs')
 // =====================================================
 function getStuMoFee(si,yr){
   const s=D.stu.find(x=>x.id===si);if(!s)return{f:{},tot:0};
-  const cf=D.cFees.find(x=>x.ci===s.ci&&x.yr==yr)||D.cFees.find(x=>x.ci===s.ci);
+  // Match class + category + year first (exact), then class + category (any year),
+  // then fall back to class-only match (for fee records set up before categories existed).
+  const cf=D.cFees.find(x=>x.ci===s.ci&&x.cat===s.cat&&x.yr==yr)
+        ||D.cFees.find(x=>x.ci===s.ci&&x.cat===s.cat)
+        ||D.cFees.find(x=>x.ci===s.ci&&!x.cat&&x.yr==yr)
+        ||D.cFees.find(x=>x.ci===s.ci&&!x.cat);
   if(!cf)return{f:{},tot:0};
   const f={};let tot=0;
   D.feeH.forEach(h=>{let v=cf.f?.[h.id]||0;if(h.tp==='Yearly')v=Math.round(v/12);else if(h.tp==='One-time')v=0;f[h.id]=v;tot+=v;});
@@ -858,38 +1075,195 @@ function getStuPrevDue(si,mon,yr){
   const s=D.stu.find(x=>x.id===si);
   const opd=s?(+s.opd||0):0;
   const billed=D.bills.filter(b=>b.si===si&&!(b.mo==mon&&b.yr==yr)).reduce((a,b)=>a+(+b.tot),0);
-  const paid=D.rcps.filter(r=>r.si===si).reduce((a,r)=>a+(+r.a),0);
-  return Math.max(0,opd+billed-paid);
+  const ledCh=D.ledCharges.filter(x=>x.si===si).reduce((a,x)=>a+(+x.amt||0),0);
+  const paidPlusDisc=D.rcps.filter(r=>r.si===si).reduce((a,r)=>a+(+r.a)+(+r.disc||0),0);
+  return Math.max(0,opd+billed+ledCh-paidPlusDisc);
 }
+
+// --- Per-student, per-month exact fee override (e.g. student only pays Rs.300 instead of Rs.600) ---
+function getBillOverride(si,mon,yr){
+  return D.billOv.find(o=>o.si===si&&o.mo==mon&&o.yr==yr);
+}
+// --- One-time extra charges for a student in a specific month (e.g. Dress Fee, Misc Fee) ---
+function getExtrasForMonth(si,mon,yr){
+  return D.extras.filter(x=>x.si===si&&x.mo==mon&&x.yr==yr);
+}
+function getExtrasTotal(si,mon,yr){
+  return getExtrasForMonth(si,mon,yr).reduce((a,x)=>a+(+x.amt||0),0);
+}
+// --- Compute what this student's bill SHOULD be for a given month, before saving it ---
+// Priority: per-month override (exact amount) > normal class fee minus permanent adjustment
+// Extra charges are always added on top, regardless of which base is used.
+function computeMonthBillAmount(si,mon,yr){
+  const ov=getBillOverride(si,mon,yr);
+  const baseFee = ov ? (+ov.amt||0) : Math.max(0, getStuMoFee(si,yr).tot - getStuAdjAmt(si));
+  const extras = getExtrasTotal(si,mon,yr);
+  return { base: baseFee, extras, total: baseFee + extras, usedOverride: !!ov };
+}
+
 function genAllBills(){
-  const mon=document.getElementById('bMon').value,yr=document.getElementById('bYr').value,cf=document.getElementById('bCls').value;
-  const students=D.stu.filter(s=>s.st==='Active'&&(!cf||s.ci===cf));let g=0;
+  const mon=document.getElementById('bMon').value,yr=document.getElementById('bYr').value,cf=document.getElementById('bCls').value,catf=document.getElementById('bCat').value;
+  const students=D.stu.filter(s=>s.st==='Active'&&(!cf||s.ci===cf)&&(!catf||s.cat===catf));let g=0;
   students.forEach(s=>{
     if(D.bills.find(b=>b.si===s.id&&b.mo==mon&&b.yr==yr))return;
     const{f,tot}=getStuMoFee(s.id,yr);
     const adj=getStuAdjAmt(s.id);
-    const net=Math.max(0,tot-adj);
-    D.bills.push({id:'B'+Date.now()+Math.random().toString(36).slice(2,5),si:s.id,mo:mon,yr,f,curr:tot,adj:adj,tot:net,gd:todayBS()});g++;
+    const {base,extras,total,usedOverride}=computeMonthBillAmount(s.id,mon,yr);
+    D.bills.push({id:'B'+Date.now()+Math.random().toString(36).slice(2,5),si:s.id,mo:mon,yr,f,curr:tot,adj:adj,base:base,extras:extras,override:usedOverride,tot:total,gd:todayBS()});g++;
   });
   sv('bills');renderBills();toast(`Generated ${g} bills for ${mname(mon)} ${yr} BS`);
 }
+
+// --- Regenerate (recompute) a single student's bill for a month, e.g. after editing override/extras ---
+function regenerateBill(si,mon,yr){
+  const{f,tot}=getStuMoFee(si,yr);
+  const adj=getStuAdjAmt(si);
+  const {base,extras,total,usedOverride}=computeMonthBillAmount(si,mon,yr);
+  const idx=D.bills.findIndex(b=>b.si===si&&b.mo==mon&&b.yr==yr);
+  const entry={id:idx>=0?D.bills[idx].id:'B'+Date.now()+Math.random().toString(36).slice(2,5),si,mo:mon,yr,f,curr:tot,adj:adj,base:base,extras:extras,override:usedOverride,tot:total,gd:todayBS()};
+  if(idx>=0) D.bills[idx]=entry; else D.bills.push(entry);
+  sv('bills');
+}
+
+// --- EDIT BILL MODAL (per-month override + extra charges) ---
+function openBillEdit(si,mon,yr){
+  const s=D.stu.find(x=>x.id===si);if(!s)return;
+  document.getElementById('beStuId').value=si;
+  document.getElementById('beMon').value=mon;
+  document.getElementById('beYr').value=yr;
+  document.getElementById('billEditTitle').textContent='EDIT BILL — '+s.nm;
+  document.getElementById('billEditSub').textContent=`${mname(mon)} ${yr} BS — Normal class fee: Rs.${Math.max(0,getStuMoFee(si,yr).tot-getStuAdjAmt(si)).toLocaleString()}`;
+  const ov=getBillOverride(si,mon,yr);
+  document.getElementById('beUseOverride').checked=!!ov;
+  document.getElementById('beOverrideAmt').value=ov?ov.amt:'';
+  document.getElementById('beOverrideNote').value=ov?(ov.note||''):'';
+  document.getElementById('beOverrideRow').style.display=ov?'flex':'none';
+  renderExtrasList(si,mon,yr);
+  openM('mBillEdit');
+}
+function toggleBillOverride(){
+  document.getElementById('beOverrideRow').style.display=document.getElementById('beUseOverride').checked?'flex':'none';
+}
+function renderExtrasList(si,mon,yr){
+  const list=getExtrasForMonth(si,mon,yr);
+  document.getElementById('beExtrasList').innerHTML=list.map((x,i)=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 8px;border:1px solid #e0c878;background:#fffdf5;margin-bottom:4px;font-size:11px">
+      <span><strong>${x.nm}</strong></span>
+      <span style="display:flex;align-items:center;gap:8px">
+        Rs.${(+x.amt).toLocaleString()}
+        <button class="btn bxs bdg" onclick="removeExtraCharge('${x.id}')">X</button>
+      </span>
+    </div>`).join('') || '<div style="font-size:10.5pt;color:var(--mu);padding:4px 0">No extra charges added yet for this month.</div>';
+}
+function addExtraCharge(){
+  const si=document.getElementById('beStuId').value,mon=document.getElementById('beMon').value,yr=document.getElementById('beYr').value;
+  const nm=document.getElementById('beExtraName').value.trim();
+  const amt=parseFloat(document.getElementById('beExtraAmt').value)||0;
+  if(!nm||!amt){toast('Enter a charge name and amount','err');return;}
+  D.extras.push({id:'EX'+Date.now()+Math.random().toString(36).slice(2,5),si,mo:mon,yr,nm,amt});
+  sv('extras');
+  document.getElementById('beExtraName').value='';
+  document.getElementById('beExtraAmt').value='';
+  renderExtrasList(si,mon,yr);
+}
+function removeExtraCharge(id){
+  D.extras=D.extras.filter(x=>x.id!==id);
+  sv('extras');
+  const si=document.getElementById('beStuId').value,mon=document.getElementById('beMon').value,yr=document.getElementById('beYr').value;
+  renderExtrasList(si,mon,yr);
+}
+function saveBillEdit(){
+  const si=document.getElementById('beStuId').value,mon=document.getElementById('beMon').value,yr=document.getElementById('beYr').value;
+  const useOv=document.getElementById('beUseOverride').checked;
+  const idx=D.billOv.findIndex(o=>o.si===si&&o.mo==mon&&o.yr==yr);
+  if(useOv){
+    const amt=parseFloat(document.getElementById('beOverrideAmt').value);
+    if(isNaN(amt)||amt<0){toast('Enter a valid override amount','err');return;}
+    const note=document.getElementById('beOverrideNote').value;
+    const entry={id:idx>=0?D.billOv[idx].id:'OV'+Date.now(),si,mo:mon,yr,amt,note};
+    if(idx>=0) D.billOv[idx]=entry; else D.billOv.push(entry);
+  } else if(idx>=0){
+    D.billOv.splice(idx,1);
+  }
+  sv('billOv');
+  regenerateBill(si,mon,yr);
+  closeM('mBillEdit');
+  renderBills();
+  toast('Bill updated and regenerated');
+}
 function renderBills(){
-  const mon=document.getElementById('bMon').value,yr=document.getElementById('bYr').value,cf=document.getElementById('bCls').value;
-  const students=D.stu.filter(s=>s.st==='Active'&&(!cf||s.ci===cf));
+  const mon=document.getElementById('bMon').value,yr=document.getElementById('bYr').value,cf=document.getElementById('bCls').value,catf=document.getElementById('bCat').value;
+  const students=D.stu.filter(s=>s.st==='Active'&&(!cf||s.ci===cf)&&(!catf||s.cat===catf));
   document.getElementById('billTbl').innerHTML=students.map((s,i)=>{
     const c=D.cls.find(x=>x.id===s.ci),bill=D.bills.find(b=>b.si===s.id&&b.mo==mon&&b.yr==yr);
-    const prev=getStuPrevDue(s.id,mon,yr),curr=bill?+bill.tot:getStuMoFee(s.id,yr).tot,totDue=prev+curr;
-    const paid=D.rcps.filter(r=>r.si===s.id&&r.mo==mon&&r.yr==yr).reduce((a,r)=>a+(+r.a),0),bal=totDue-paid;
+    const computed=computeMonthBillAmount(s.id,mon,yr);
+    const curr=bill?+bill.tot:computed.total;
+    const hasOv=bill?!!bill.override:computed.usedOverride;
+    const extrasAmt=bill?(+bill.extras||0):computed.extras;
+    const prev=getStuPrevDue(s.id,mon,yr),totDue=prev+curr;
+    const rcpsThisMo=D.rcps.filter(r=>r.si===s.id&&r.mo==mon&&r.yr==yr);
+    const paidCash=rcpsThisMo.reduce((a,r)=>a+(+r.a),0);
+    const paidDisc=rcpsThisMo.reduce((a,r)=>a+(+r.disc||0),0);
+    const bal=totDue-paidCash-paidDisc;
     const st=!bill?`<span class="badge bwrn">NOT GEN.</span>`:bal<=0?`<span class="badge bok2">PAID</span>`:`<span class="badge berr">PENDING</span>`;
-    return`<tr><td>${i+1}</td><td><strong>${s.nm}</strong></td><td>${c?c.n+(c.s?' '+c.s:''):''}</td><td>${mname(mon)} ${yr}</td><td style="color:${prev>0?'var(--dg)':'inherit'}">Rs.${prev}</td><td>Rs.${curr}</td><td><strong>Rs.${totDue}</strong></td><td style="color:var(--ok)">Rs.${paid}</td><td style="color:${bal>0?'var(--dg)':'var(--ok)'}"><strong>Rs.${bal}</strong></td><td>${st}</td><td><button class="btn bxs bac" onclick="prevInv('${s.id}','${mon}','${yr}')">&#128424; PRINT</button></td></tr>`;
-  }).join('')||`<tr><td colspan="11" style="text-align:center;color:var(--mu);padding:12px">Select month/year and click SHOW BILLS</td></tr>`;
+    const tags=(hasOv?'<br><span class="badge binf" style="font-size:8px">OVERRIDE</span>':'')+(extrasAmt>0?` <span class="badge bwrn" style="font-size:8px">+Rs.${extrasAmt} EXTRA</span>`:'');
+    return`<tr><td>${i+1}</td><td><strong>${s.nm}</strong></td><td>${c?c.n+(c.s?' '+c.s:''):''}</td><td><span class="badge binf">${s.cat||'-'}</span></td><td>${mname(mon)} ${yr}</td><td style="color:${prev>0?'var(--dg)':'inherit'}">Rs.${prev}</td><td>Rs.${curr}${tags}</td><td><strong>Rs.${totDue}</strong></td><td style="color:var(--ok)">Rs.${paidCash}${paidDisc>0?`<br><span style="font-size:9px;color:var(--ac)">+Rs.${paidDisc} disc.</span>`:''}</td><td style="color:${bal>0?'var(--dg)':'var(--ok)'}"><strong>Rs.${bal}</strong></td><td>${st}</td><td><button class="btn bxs bse" onclick="openBillEdit('${s.id}','${mon}','${yr}')">&#9999; EDIT</button> <button class="btn bxs bac" onclick="prevInv('${s.id}','${mon}','${yr}')">&#128424; PRINT</button></td></tr>`;
+  }).join('')||`<tr><td colspan="12" style="text-align:center;color:var(--mu);padding:12px">Select month/year and click SHOW BILLS</td></tr>`;
 }
 function printAllBills(){
-  const mon=document.getElementById('bMon').value,yr=document.getElementById('bYr').value,cf=document.getElementById('bCls').value;
-  const students=D.stu.filter(s=>s.st==='Active'&&(!cf||s.ci===cf));
+  const mon=document.getElementById('bMon').value,yr=document.getElementById('bYr').value,cf=document.getElementById('bCls').value,catf=document.getElementById('bCat').value;
+  const students=D.stu.filter(s=>s.st==='Active'&&(!cf||s.ci===cf)&&(!catf||s.cat===catf));
   if(!students.length){toast('No students found','err');return;}
-  showPP(`BILLS — ${mname(mon)} ${yr} BS`,students.map(s=>buildInv(s.id,mon,yr)+'<div style="page-break-after:always;margin-bottom:20px"></div>').join(''));
+  const cards=students.map(s=>buildInv(s.id,mon,yr));
+  showLandscapeInvoices(`BILLS — ${mname(mon)} ${yr} BS${catf?' — '+catf:''}`,cards);
 }
+
+// --- Print invoices 2-per-page on A4 LANDSCAPE (used by single Print and Print All) ---
+function showLandscapeInvoices(title,cards){
+  // Pair cards into rows of 2; each pair = one landscape page (page-break after every pair)
+  const pages=[];
+  for(let i=0;i<cards.length;i+=2){
+    pages.push([cards[i],cards[i+1]||'']);
+  }
+  const pagesHtml=pages.map((pair,idx)=>`
+    <div class="inv-page" style="${idx<pages.length-1?'page-break-after:always;':''}">
+      <div class="inv-slot">${pair[0]}</div>
+      <div class="inv-slot">${pair[1]}</div>
+    </div>`).join('');
+
+  const w=window.open('','_blank','width=1200,height=820,scrollbars=yes,resizable=yes');
+  if(!w){alert('Pop-up blocked! Please allow pop-ups for this page to enable printing.');return;}
+  w.document.open();
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:#666;color:#000;}
+body{font-family:'Courier New',monospace;padding:6mm 0;}
+.inv-page{background:#fff;box-sizing:border-box;width:287mm;height:200mm;margin:0 auto 6mm;padding:5mm;display:flex;gap:6mm;box-shadow:0 2px 10px rgba(0,0,0,.3);}
+.inv-slot{flex:1;min-width:0;height:100%;}
+table{border-collapse:collapse;}
+.no-print{display:block;}
+@page{margin:5mm;size:A4 landscape;}
+@media print{
+  html,body{background:#fff;}
+  .no-print{display:none!important;}
+  body{padding:0;}
+  .inv-page{margin:0;box-shadow:none;width:100%;height:100%;}
+}
+</style></head><body>
+<div class="no-print" style="position:fixed;top:0;left:0;right:0;background:#1a3a6b;color:#fff;padding:8px 16px;display:flex;justify-content:space-between;align-items:center;z-index:99">
+  <span style="font-weight:700;font-size:12pt">&#128424; ${title} &nbsp; <span style="font-size:9pt;opacity:.85">(A4 Landscape — 2 students per page)</span></span>
+  <div style="display:flex;gap:8px">
+    <button onclick="window.print()" style="background:#b8860b;color:#fff;border:none;padding:6px 20px;cursor:pointer;font-weight:700;font-size:12px;font-family:monospace">PRINT</button>
+    <button onclick="window.close()" style="background:#555;color:#fff;border:none;padding:6px 14px;cursor:pointer;font-size:12px;font-family:monospace">CLOSE</button>
+  </div>
+</div>
+<div class="no-print" style="height:46px"></div>
+${pagesHtml}
+</body></html>`);
+  w.document.close();w.focus();
+}
+
 
 // =====================================================
 // PROFESSIONAL INVOICE BUILDER
@@ -899,58 +1273,76 @@ function buildInv(si,mon,yr){
   const c=D.cls.find(x=>x.id===s.ci),sc=D.cfg;
   const bill=D.bills.find(b=>b.si===si&&b.mo==mon&&b.yr==yr);
   const{f,tot:grossFee}=getStuMoFee(si,yr);
-  const adj=bill?(+bill.adj||0):getStuAdjAmt(si);
-  const currFee=bill?(+bill.tot):Math.max(0,grossFee-adj);
+  const isOverride=bill?!!bill.override:!!getBillOverride(si,mon,yr);
+  const baseFee=bill?(+bill.base!==undefined?+bill.base:grossFee):computeMonthBillAmount(si,mon,yr).base;
+  const extrasList=getExtrasForMonth(si,mon,yr);
+  const currFee=bill?(+bill.tot):computeMonthBillAmount(si,mon,yr).total;
   const prev=getStuPrevDue(si,mon,yr),totDue=prev+currFee;
   const rcpsThisMonth=D.rcps.filter(r=>r.si===si&&r.mo==mon&&r.yr==yr);
-  const paid=rcpsThisMonth.reduce((a,r)=>a+(+r.a),0);
-  const rcpDisc=rcpsThisMonth.reduce((a,r)=>a+(+r.disc||0),0);
+  // Paid amount shown on the invoice already nets out any discount given (i.e. it
+  // reflects the amount that was settled), so no separate discount line is printed.
+  const paid=rcpsThisMonth.reduce((a,r)=>a+(+r.a)+(+r.disc||0),0);
   const bal=totDue-paid;
   const bNo=`${sc.billPfx||'BILL'}-${yr}-${String(mon).padStart(2,'0')}-${si.slice(-4)}`;
-  const fRows=D.feeH.map(h=>{const v=f[h.id]||0;return v>0?`<tr style="border-bottom:1px solid #e8e8e8"><td style="padding:6px 10px;font-size:11.5pt;font-weight:700">${h.n}</td><td style="padding:6px 10px;color:#555;font-size:10.5pt;font-weight:700">${h.tp}</td><td style="padding:6px 10px;text-align:right;font-size:10.5pt;font-weight:700">${h.tp==='Yearly'?`${(D.cFees.find(x=>x.ci===s.ci&&x.yr==yr)||D.cFees.find(x=>x.ci===s.ci))?.f?.[h.id]||0}/yr`:''}</td><td style="padding:6px 10px;text-align:right;font-weight:700;font-size:11.5pt">Rs.${v.toLocaleString()}</td></tr>`:''}).join('');
-  return`<div style="font-family:'Courier New',monospace;color:#111;background:#fff;padding:0;max-width:680px;margin:0 auto;font-weight:700">
+  // Apply each fee-heading-specific adjustment directly to that heading's row, so the
+  // amount shown per heading is always the EXACT final amount charged — no separate
+  // "discount" or "this month fee differs" line is ever needed below it.
+  const adjByHeading={};
+  D.adjs.filter(a=>a.si===si).forEach(a=>{
+    const delta=(a.tp==='surcharge'?-(+a.a):(+a.a));
+    adjByHeading[a.hi]=(adjByHeading[a.hi]||0)+delta;
+  });
+  const fRows=D.feeH.map(h=>{
+    const gross=f[h.id]||0;
+    const net=isOverride?gross:Math.max(0,gross-(adjByHeading[h.id]||0));
+    if(net<=0&&gross<=0)return'';
+    return`<tr style="border-bottom:1px solid #e8e8e8"><td style="padding:3px 6px;font-size:9pt;font-weight:700">${h.n}</td><td style="padding:3px 6px;text-align:right;font-weight:700;font-size:9pt">Rs.${net.toLocaleString()}</td></tr>`;
+  }).join('');
+  const extraRows=extrasList.map(x=>`<tr style="background:#fff8e1;border-bottom:1px solid #f0e0b0"><td style="padding:3px 6px;font-size:9pt;font-weight:700;color:#856404">${x.nm} <span style="font-size:7.5pt">(Extra)</span></td><td style="padding:3px 6px;text-align:right;font-size:9pt;font-weight:700;color:#856404">Rs.${(+x.amt).toLocaleString()}</td></tr>`).join('');
+  return`<div class="inv-card" style="font-family:'Courier New',monospace;color:#111;background:#fff;font-weight:700;border:2px solid #1a3a6b;height:100%;box-sizing:border-box;padding:14px 16px;font-size:11.5pt;display:flex;flex-direction:column">
 <table style="width:100%;border-collapse:collapse;padding-bottom:10px;margin-bottom:10px;border-bottom:3px double #1a3a6b">
-  <tr><td style="width:74px;vertical-align:middle"><div style="width:68px;height:68px;border:2px solid #1a3a6b;display:flex;align-items:center;justify-content:center;font-size:28px;background:#eef1fb">&#127979;</div></td>
-  <td style="padding-left:12px;vertical-align:middle">
-    <div style="font-size:24pt;font-weight:700;color:#1a3a6b;letter-spacing:1px">${sc.name}</div>
-    <div style="font-size:12.5pt;color:#333;margin-top:3px;font-weight:700">${sc.addr} &nbsp;|&nbsp; Tel: ${sc.phone}</div>
-    <div style="font-size:11pt;color:#666;font-weight:700">Email: ${sc.email} &nbsp;|&nbsp; Reg: ${sc.reg} &nbsp;|&nbsp; PAN: ${sc.pan}</div>
+  <tr><td style="width:62px;vertical-align:middle"><div style="width:56px;height:56px;border:2.5px solid #1a3a6b;display:flex;align-items:center;justify-content:center;font-size:26px;background:#eef1fb;overflow:hidden">${sc.logo?`<img src="${sc.logo}" style="width:100%;height:100%;object-fit:contain">`:'&#127979;'}</div></td>
+  <td style="padding-left:10px;vertical-align:middle">
+    <div style="font-size:19pt;font-weight:700;color:#1a3a6b;letter-spacing:.5px;line-height:1.15">${sc.name}</div>
+    <div style="font-size:10pt;color:#333;font-weight:700">${sc.addr} | ${sc.phone}</div>
   </td>
-  <td style="text-align:right;vertical-align:middle;width:175px">
-    <div style="font-size:16pt;font-weight:700;color:#fff;background:#1a3a6b;padding:6px 14px;display:inline-block;letter-spacing:2px">FEE BILL</div>
-    <div style="font-size:10.5pt;margin-top:6px;font-weight:700"><strong>Bill No:</strong> ${bNo}</div>
-    <div style="font-size:10.5pt;font-weight:700"><strong>Date:</strong> ${fmtBS(todayBS())}</div>
+  <td style="text-align:right;vertical-align:middle;width:120px">
+    <div style="font-size:12pt;font-weight:700;color:#fff;background:#1a3a6b;padding:4px 12px;display:inline-block;letter-spacing:1.5px">FEE BILL</div>
+    <div style="font-size:9.5pt;margin-top:5px;font-weight:700">${bNo}</div>
   </td></tr>
 </table>
-<table style="width:100%;border-collapse:collapse;margin-bottom:12px;border:1px solid #d0d8f0;background:#f7f9ff">
-  <tr style="background:#1a3a6b;color:#fff"><th colspan="4" style="padding:8px 12px;font-size:12.5pt;text-align:left;font-weight:700;letter-spacing:.5px">STUDENT DETAILS</th></tr>
-  <tr><td style="padding:6px 12px;font-size:11.5pt;width:50%;font-weight:700">Name: ${s.nm}</td><td style="padding:6px 12px;font-size:11.5pt;font-weight:700">Bill Month: <span style="color:#b8860b">${mname(mon)} ${yr} BS</span></td></tr>
-  <tr style="background:#eef1fb"><td style="padding:6px 12px;font-size:11.5pt;font-weight:700">Class: ${c?c.n+(c.s?' — Sec. '+c.s:''):'-'}</td><td style="padding:6px 12px;font-size:11.5pt;font-weight:700">Roll No.: ${s.ro||'-'}</td></tr>
-  <tr><td style="padding:6px 12px;font-size:11.5pt;font-weight:700">Father/Guardian: ${s.ft||'-'}</td><td style="padding:6px 12px;font-size:11.5pt;font-weight:700">Phone: ${s.ph||'-'}</td></tr>
-  <tr style="background:#eef1fb"><td style="padding:6px 12px;font-size:11.5pt;font-weight:700">Student ID: ${s.id}</td><td style="padding:6px 12px;font-size:11.5pt;font-weight:700">Admission: ${s.ad||'-'}</td></tr>
+<table style="width:100%;border-collapse:collapse;margin-bottom:9px;border:1px solid #d0d8f0;background:#f7f9ff;font-size:11pt">
+  <tr><td style="padding:5px 8px;font-weight:700;width:55%">${s.nm}</td><td style="padding:5px 8px;font-weight:700;color:#b8860b">${mname(mon)} ${yr} BS</td></tr>
+  <tr style="background:#eef1fb"><td style="padding:5px 8px;font-weight:700">${c?c.n+(c.s?' '+c.s:''):'-'}${s.cat?' — '+s.cat:''}</td><td style="padding:5px 8px;font-weight:700">Roll: ${s.ro||'-'}</td></tr>
+  <tr><td style="padding:5px 8px;font-weight:700">Father: ${s.ft||'-'}</td><td style="padding:5px 8px;font-weight:700">${s.id}</td></tr>
 </table>
-<table style="width:100%;border-collapse:collapse;border:1px solid #ddd">
-  <thead><tr style="background:#1a3a6b;color:#fff"><th style="padding:7px 10px;text-align:left;width:38%;font-size:11.5pt">Fee Heading</th><th style="padding:7px 10px;text-align:left;width:15%;font-size:11.5pt">Type</th><th style="padding:7px 10px;text-align:right;width:22%;font-size:11.5pt">Annual Rate</th><th style="padding:7px 10px;text-align:right;width:25%;font-size:11.5pt">This Month (Rs.)</th></tr></thead>
-  <tbody>${fRows||'<tr><td colspan="4" style="padding:10px;text-align:center;color:#888;font-size:11pt">No fee structure defined</td></tr>'}</tbody>
+<table style="width:100%;border-collapse:collapse;border:1px solid #ddd;font-size:11pt">
+  <tbody>${isOverride?`<tr style="background:#e8f0ff"><td style="padding:6px 8px;font-weight:700;color:#1a3a6b">Monthly Fee (Special Rate)</td><td style="padding:6px 8px;text-align:right;font-weight:700;color:#1a3a6b">Rs.${baseFee.toLocaleString()}</td></tr>`:(fRows||'<tr><td colspan="2" style="padding:8px;text-align:center;color:#888">No fee structure defined</td></tr>')}</tbody>
 </table>
-<table style="width:100%;border-collapse:collapse;border:1px solid #ddd;border-top:none">
-  <tr style="background:#f0f4dc"><td style="padding:7px 12px;font-size:12pt">Sub-total (Current Month Fee)</td><td style="padding:7px 12px;text-align:right;font-size:12pt;font-weight:700">Rs. ${grossFee.toLocaleString()}</td></tr>
-  ${adj>0?`<tr style="background:#fff8e1"><td style="padding:6px 12px;font-size:11.5pt;color:#856404">(&minus;) Discount / Adjustment</td><td style="padding:6px 12px;text-align:right;font-size:11.5pt;color:#856404;font-weight:700">Rs. ${adj.toLocaleString()}</td></tr>
-  <tr style="background:#e8f0ff"><td style="padding:7px 12px;font-size:12pt">Net Current Month Fee</td><td style="padding:7px 12px;text-align:right;font-size:12pt;font-weight:700">Rs. ${currFee.toLocaleString()}</td></tr>`:''}
-  ${prev>0?`<tr style="background:#fff0f0"><td style="padding:7px 12px;font-size:12pt;color:#6b0000">&#9888; Previous Month Dues (Carried Forward)</td><td style="padding:7px 12px;text-align:right;font-size:12pt;color:#6b0000;font-weight:700">Rs. ${prev.toLocaleString()}</td></tr>`:''}
-  <tr style="background:#1a3a6b;color:#fff"><td style="padding:9px 12px;font-size:15pt;font-weight:700;letter-spacing:.5px">TOTAL DUE</td><td style="padding:9px 12px;text-align:right;font-size:17pt;font-weight:700">Rs. ${totDue.toLocaleString()}</td></tr>
-  ${rcpDisc>0?`<tr style="background:#fff8e1"><td style="padding:6px 12px;font-size:11.5pt;color:#856404">(&minus;) Discount Given at Payment</td><td style="padding:6px 12px;text-align:right;font-size:11.5pt;color:#856404;font-weight:700">Rs. ${rcpDisc.toLocaleString()}</td></tr>`:''}
-  ${paid>0?`<tr style="background:#d4edda"><td style="padding:6px 12px;font-size:11.5pt;color:#155724">(&#10003;) Amount Paid This Month</td><td style="padding:6px 12px;text-align:right;font-size:11.5pt;color:#155724;font-weight:700">Rs. ${paid.toLocaleString()}</td></tr>`:''}
-  <tr style="background:${bal>0?'#fde':'#d4edda'}"><td style="padding:8px 12px;font-size:14pt;font-weight:700;color:${bal>0?'#6b0000':'#155724'}">BALANCE${bal<=0?' (CLEARED)':''}</td><td style="padding:8px 12px;text-align:right;font-size:15pt;font-weight:700;color:${bal>0?'#6b0000':'#155724'}">Rs. ${bal.toLocaleString()}</td></tr>
+${extraRows?`<table style="width:100%;border-collapse:collapse;border:1px solid #f0e0b0;border-top:none;font-size:11pt"><tbody>${extraRows}</tbody></table>`:''}
+<table style="width:100%;border-collapse:collapse;border:1px solid #ddd;border-top:none;font-size:11pt;margin-top:2px">
+  ${prev>0?`<tr style="background:#fff0f0"><td style="padding:6px 8px;color:#6b0000">Previous Dues (B/F)</td><td style="padding:6px 8px;text-align:right;color:#6b0000;font-weight:700">Rs. ${prev.toLocaleString()}</td></tr>`:''}
+  <tr style="background:#1a3a6b;color:#fff"><td style="padding:8px 8px;font-size:13.5pt;font-weight:700">TOTAL DUE</td><td style="padding:8px 8px;text-align:right;font-size:14.5pt;font-weight:700">Rs. ${totDue.toLocaleString()}</td></tr>
+  ${paid>0?`<tr style="background:#d4edda"><td style="padding:6px 8px;color:#155724">Amount Paid</td><td style="padding:6px 8px;text-align:right;color:#155724;font-weight:700">Rs. ${paid.toLocaleString()}</td></tr>`:''}
+  <tr style="background:${bal>0?'#fde':'#d4edda'}"><td style="padding:7px 8px;font-size:12.5pt;font-weight:700;color:${bal>0?'#6b0000':'#155724'}">BALANCE${bal<=0?' (CLEARED)':''}</td><td style="padding:7px 8px;text-align:right;font-size:13pt;font-weight:700;color:${bal>0?'#6b0000':'#155724'}">Rs. ${bal.toLocaleString()}</td></tr>
 </table>
-${prev>0?`<div style="background:#fff3cd;border-left:4px solid #b8860b;padding:7px 10px;margin-top:8px;font-size:11pt;font-weight:700;color:#856404">Notice: An amount of Rs. ${prev.toLocaleString()} has been carried forward from previous month(s). Please settle all dues at the earliest.</div>`:''}
-<table style="width:100%;margin-top:30px;font-size:11pt;font-weight:700;border-top:1px dashed #ccc;padding-top:8px">
-  <tr><td style="text-align:center;width:33%">_______________<br>Cashier</td><td style="text-align:center;width:34%">_______________<br>Accounts Officer</td><td style="text-align:right;width:33%">_______________<br>Principal<br><em>${sc.principal||''}</em></td></tr>
+${prev>0?`<div style="background:#fff3cd;border-left:4px solid #b8860b;padding:6px 9px;margin-top:9px;font-size:10pt;font-weight:700;color:#856404">Notice: Rs. ${prev.toLocaleString()} carried forward from previous month(s).</div>`:''}
+<div style="flex:1"></div>
+<table style="width:100%;margin-top:14px;font-size:10pt;font-weight:700;border-top:1px dashed #ccc;padding-top:6px">
+  <tr>
+    <td style="text-align:center;width:34%">${sc.cashierSig?`<img src="${sc.cashierSig}" style="height:32px;object-fit:contain">`:'<div style="height:32px"></div>'}<div style="border-top:1px solid #333;margin-top:2px;padding-top:2px">Cashier</div></td>
+    <td style="text-align:center;width:33%"><div style="height:32px"></div><div style="border-top:1px solid #333;margin-top:2px;padding-top:2px">Accounts</div></td>
+    <td style="text-align:center;width:33%">${sc.principalSig?`<img src="${sc.principalSig}" style="height:32px;object-fit:contain">`:'<div style="height:32px"></div>'}<div style="border-top:1px solid #333;margin-top:2px;padding-top:2px">Principal</div></td>
+  </tr>
 </table>
-<div style="text-align:center;margin-top:10px;font-size:10.5pt;font-weight:700;color:#444;border-top:1px dashed #ddd;padding-top:6px">*** Please pay fee by the 10th of every Nepali month. Late payments may attract fine. ***<br><strong style="font-size:12pt">${sc.name}</strong> | ${sc.addr} | ${sc.phone}</div>
+<div style="text-align:center;margin-top:8px;font-size:9.5pt;font-weight:700;color:#555">Pay by 10th of every Nepali month. Late payment may attract fine.</div>
 </div>`;
 }
-function prevInv(si,mon,yr){const h=buildInv(si,mon,yr);if(!h){toast('No bill data','err');return;}showPP(`FEE BILL — ${mname(mon)} ${yr} BS`,h);}
+function prevInv(si,mon,yr){
+  const h=buildInv(si,mon,yr);
+  if(!h){toast('No bill data','err');return;}
+  showLandscapeInvoices(`FEE BILL — ${mname(mon)} ${yr} BS`,[h]);
+}
 
 // =====================================================
 // CASH RECEIPTS
@@ -958,7 +1350,12 @@ function prevInv(si,mon,yr){const h=buildInv(si,mon,yr);if(!h){toast('No bill da
 function openRcpM(){document.getElementById('rcpIx').value=-1;document.getElementById('rcpA').value='';document.getElementById('rcpBl').value='';document.getElementById('rcpR').value='';document.getElementById('rcpDisc').value='';document.getElementById('rcpDiscR').value='';document.getElementById('rcpD').value=todayBS();['rpPrev','rpCurr','rpTot','rpDiscDisp'].forEach(id=>document.getElementById(id).textContent='Rs. 0');fillDDs();openM('mRcp');}
 function loadStuDue(){
   const si=document.getElementById('rcpS').value,mon=document.getElementById('rcpM').value,yr=document.getElementById('rcpY').value;if(!si)return;
-  const prev=getStuPrevDue(si,mon,yr),{tot:curr}=getStuMoFee(si,yr);
+  const prev=getStuPrevDue(si,mon,yr);
+  // Use the already-generated bill's net total if it exists (includes any per-month override
+  // and extra charges), otherwise compute fresh using the same override/extras-aware logic
+  // so it always matches what Bill Generate would produce.
+  const bill=D.bills.find(b=>b.si===si&&b.mo==mon&&b.yr==yr);
+  const curr=bill?(+bill.tot):computeMonthBillAmount(si,mon,yr).total;
   const disc=parseFloat(document.getElementById('rcpDisc').value)||0;
   const tot=Math.max(0,prev+curr-disc);
   document.getElementById('rpPrev').textContent=`Rs. ${prev.toLocaleString()}`;document.getElementById('rpCurr').textContent=`Rs. ${curr.toLocaleString()}`;document.getElementById('rpDiscDisp').textContent=`Rs. ${disc.toLocaleString()}`;document.getElementById('rpTot').textContent=`Rs. ${tot.toLocaleString()}`;document.getElementById('rcpA').value=tot;calcBal();
@@ -983,9 +1380,13 @@ function delRcp(id){if(!confirm('Delete receipt?'))return;D.rcps=D.rcps.filter(r
 function buildRcpHTML(id){
   const r=D.rcps.find(x=>x.id===id);if(!r)return'';
   const s=D.stu.find(x=>x.id===r.si),c=D.cls.find(x=>x.id===s?.ci),sc=D.cfg;
-  const prev=getStuPrevDue(r.si,r.mo,r.yr),{tot:curr}=getStuMoFee(r.si,r.yr),disc=+r.disc||0,totDue=Math.max(0,prev+curr-disc),bal=totDue-(+r.a);
+  const prev=getStuPrevDue(r.si,r.mo,r.yr);
+  const bill=D.bills.find(b=>b.si===r.si&&b.mo==r.mo&&b.yr==r.yr);
+  const curr=bill?(+bill.tot):computeMonthBillAmount(r.si,r.mo,r.yr).total;
+  const disc=+r.disc||0,totDue=Math.max(0,prev+curr-disc),bal=totDue-(+r.a);
   const copy=(lbl)=>`<div style="border:2px solid #333;padding:12px;width:330px;display:inline-block;vertical-align:top;margin:6px;font-family:'Courier New',monospace;font-size:10.5pt">
     <div style="text-align:center;padding-bottom:8px;margin-bottom:8px;border-bottom:2px dashed #333">
+      ${sc.logo?`<img src="${sc.logo}" style="height:36px;object-fit:contain;margin-bottom:4px">`:''}
       <div style="font-size:15pt;font-weight:700;color:#1a3a6b">${sc.name}</div>
       <div style="font-size:10pt;color:#444;font-weight:700">${sc.addr}</div>
       <div style="font-size:10pt;color:#444;font-weight:700">Tel: ${sc.phone}</div>
@@ -1013,12 +1414,16 @@ function buildRcpHTML(id){
     </div>
     ${disc>0&&r.discR?`<div style="font-size:9pt;color:#856404;text-align:center;margin-bottom:6px">Discount Reason: ${r.discR}</div>`:''}
     <table style="width:100%;font-size:10pt;border-collapse:collapse">
-      <tr><td>Total Due:</td><td style="text-align:right">Rs. ${totDue.toLocaleString()}</td></tr>
-      <tr><td><strong>Balance:</strong></td><td style="text-align:right;color:${bal>0?'#6b0000':'#155724'}"><strong>Rs. ${bal.toLocaleString()}</strong></td></tr>
+      <tr><td>Total Due (Prev. + This Month &minus; Disc.):</td><td style="text-align:right">Rs. ${totDue.toLocaleString()}</td></tr>
+      <tr><td><strong>DUES AMOUNT TILL THIS MONTH:</strong></td><td style="text-align:right;color:${bal>0?'#6b0000':'#155724'}"><strong>Rs. ${bal.toLocaleString()}</strong></td></tr>
     </table>
     ${r.rm?`<div style="font-size:9pt;color:#555;margin-top:6px;border-top:1px dashed #ccc;padding-top:4px">Remarks: ${r.rm}</div>`:''}
-    <table style="width:100%;margin-top:18px;font-size:9pt;color:#555">
-      <tr><td style="text-align:center">___________<br>Cashier</td><td style="text-align:center">___________<br>A/C Officer</td><td style="text-align:right"><em>${lbl}</em></td></tr>
+    <table style="width:100%;margin-top:14px;font-size:9pt;color:#555">
+      <tr>
+        <td style="text-align:center;width:34%">${sc.cashierSig?`<img src="${sc.cashierSig}" style="height:26px;object-fit:contain">`:'<div style="height:26px"></div>'}<div style="border-top:1px solid #555;margin-top:2px;padding-top:2px">Cashier</div></td>
+        <td style="text-align:center;width:33%"><div style="height:26px"></div><div style="border-top:1px solid #555;margin-top:2px;padding-top:2px">A/C Officer</div></td>
+        <td style="text-align:right;width:33%"><em>${lbl}</em></td>
+      </tr>
     </table>
   </div>`;
   return`<div style="text-align:center;font-family:'Courier New',monospace">${copy('Office Copy')}${copy('Student Copy')}</div>`;
@@ -1028,6 +1433,56 @@ function printRcpById(id){showPP('CASH RECEIPT — 2 COPIES',buildRcpHTML(id));}
 // =====================================================
 // STUDENT LEDGER
 // =====================================================
+// =====================================================
+// ADD CHARGE DIRECTLY TO LEDGER (mid-month/anytime, independent of monthly bill)
+// =====================================================
+function openLedgerChargeModal(){
+  fillDDs();
+  const presetStu=document.getElementById('ledStu')?.value||'';
+  document.getElementById('lcStu').value=presetStu;
+  document.getElementById('lcName').value='';
+  document.getElementById('lcAmt').value='';
+  document.getElementById('lcDate').value=todayBS();
+  document.getElementById('lcNote').value='';
+  lcRefreshDue();
+  openM('mLedCharge');
+}
+function lcRefreshDue(){
+  const si=document.getElementById('lcStu').value;
+  const amt=parseFloat(document.getElementById('lcAmt').value)||0;
+  const curr=si?getStuBal(si):0;
+  document.getElementById('lcCurrBal').textContent=`Rs. ${curr.toLocaleString()}`;
+  document.getElementById('lcNewBal').textContent=`Rs. ${(curr+amt).toLocaleString()}`;
+}
+document.getElementById('lcStu').addEventListener('change',lcRefreshDue);
+function saveLedgerCharge(){
+  const si=document.getElementById('lcStu').value;
+  const nm=document.getElementById('lcName').value.trim();
+  const amt=parseFloat(document.getElementById('lcAmt').value);
+  const dt=document.getElementById('lcDate').value.trim();
+  if(!si){toast('Select a student','err');return;}
+  if(!nm){toast('Enter a charge name','err');return;}
+  if(isNaN(amt)||amt<=0){toast('Enter a valid amount','err');return;}
+  if(!dt){toast('Enter a date','err');return;}
+  D.ledCharges.push({
+    id:'LC'+Date.now()+Math.random().toString(36).slice(2,5),
+    si,nm,amt,dt,note:document.getElementById('lcNote').value.trim()
+  });
+  sv('ledCharges');
+  closeM('mLedCharge');
+  // Refresh ledger view if this student is currently selected, plus dashboard totals
+  if(document.getElementById('ledStu').value===si)renderLedger();
+  renderDashboard();
+  toast(`Rs.${amt.toLocaleString()} "${nm}" added to ledger`);
+}
+function delLedgerCharge(id){
+  if(!confirm('Remove this charge from the ledger?'))return;
+  D.ledCharges=D.ledCharges.filter(x=>x.id!==id);
+  sv('ledCharges');
+  renderLedger();
+  renderDashboard();
+}
+
 function renderLedger(){
   const si=document.getElementById('ledStu').value,yr=document.getElementById('ledYr').value;
   if(!si){document.getElementById('ledDiv').innerHTML='<div class="alert ainf">Select a student to view ledger.</div>';return;}
@@ -1041,10 +1496,39 @@ function renderLedger(){
   for(let m=1;m<=12;m++){
     const bill=D.bills.find(b=>b.si===si&&b.mo==m&&b.yr==yr);
     const rcps=D.rcps.filter(r=>r.si===si&&r.mo==m&&r.yr==yr);
-    if(bill){bal+=(+bill.tot);rows+=`<tr><td>${mname(m)} ${yr}</td><td>Monthly Fee Bill</td><td>${sc.billPfx}-${yr}-${String(m).padStart(2,'0')}</td><td style="text-align:right">Rs.${(+bill.tot).toLocaleString()}</td><td></td><td style="text-align:right;color:${bal>0?'var(--dg)':'var(--ok)'}"><strong>Rs.${bal.toLocaleString()}</strong></td></tr>`;}
-    rcps.forEach(r=>{bal-=(+r.a);rows+=`<tr style="background:#e8f5e9"><td>${fmtBS(r.dt)}</td><td>Cash Receipt (${r.md})</td><td>${r.no}</td><td></td><td style="text-align:right;color:var(--ok)">Rs.${(+r.a).toLocaleString()}</td><td style="text-align:right;color:${bal>0?'var(--dg)':'var(--ok)'}"><strong>Rs.${bal.toLocaleString()}</strong></td></tr>`;});
+    const charges=D.ledCharges.filter(x=>x.si===si&&x.dt&&x.dt.startsWith(`${yr}-${String(m).padStart(2,'0')}`));
+    // Build a single chronological list for this month: bill posts on day 1 (start of month),
+    // then ledger charges and receipts interleaved by their actual date.
+    const events=[];
+    if(bill)events.push({day:'00',type:'bill',data:bill});
+    charges.forEach(x=>events.push({day:(x.dt.split('-')[2]||'01'),type:'charge',data:x}));
+    rcps.forEach(r=>events.push({day:(r.dt?r.dt.split('-')[2]:'01')||'01',type:'rcp',data:r}));
+    events.sort((a,b)=>a.day.localeCompare(b.day));
+    events.forEach(ev=>{
+      if(ev.type==='bill'){
+        bal+=(+ev.data.tot);
+        rows+=`<tr><td>${mname(m)} ${yr}</td><td>Monthly Fee Bill</td><td>${sc.billPfx}-${yr}-${String(m).padStart(2,'0')}</td><td style="text-align:right">Rs.${(+ev.data.tot).toLocaleString()}</td><td></td><td style="text-align:right;color:${bal>0?'var(--dg)':'var(--ok)'}"><strong>Rs.${bal.toLocaleString()}</strong></td></tr>`;
+      } else if(ev.type==='charge'){
+        const x=ev.data;
+        bal+=(+x.amt);
+        rows+=`<tr style="background:#ffe8e8"><td>${fmtBS(x.dt)}</td><td>${x.nm}${x.note?' ('+x.note+')':''} <span style="font-size:9px;color:#b8860b">[Ledger Charge]</span></td><td>${x.id.slice(-6)} <button class="btn bxs bdg" style="margin-left:4px" onclick="delLedgerCharge('${x.id}')">DEL</button></td><td style="text-align:right">Rs.${(+x.amt).toLocaleString()}</td><td></td><td style="text-align:right;color:${bal>0?'var(--dg)':'var(--ok)'}"><strong>Rs.${bal.toLocaleString()}</strong></td></tr>`;
+      } else {
+        const r=ev.data;
+        bal-=(+r.a);
+        rows+=`<tr style="background:#e8f5e9"><td>${fmtBS(r.dt)}</td><td>Cash Receipt (${r.md})</td><td>${r.no}</td><td></td><td style="text-align:right;color:var(--ok)">Rs.${(+r.a).toLocaleString()}</td><td style="text-align:right;color:${bal>0?'var(--dg)':'var(--ok)'}"><strong>Rs.${bal.toLocaleString()}</strong></td></tr>`;
+        if((+r.disc||0)>0){
+          bal-=(+r.disc);
+          rows+=`<tr style="background:#fff8e1"><td>${fmtBS(r.dt)}</td><td>Discount Given${r.discR?' ('+r.discR+')':''}</td><td>${r.no}-DISC</td><td></td><td style="text-align:right;color:var(--ac)">Rs.${(+r.disc).toLocaleString()}</td><td style="text-align:right;color:${bal>0?'var(--dg)':'var(--ok)'}"><strong>Rs.${bal.toLocaleString()}</strong></td></tr>`;
+        }
+      }
+    });
   }
-  const tB=opd+D.bills.filter(b=>b.si===si&&b.yr==yr).reduce((a,b)=>a+(+b.tot),0),tP=D.rcps.filter(r=>r.si===si&&r.yr==yr).reduce((a,r)=>a+(+r.a),0);
+  const tB=opd+D.bills.filter(b=>b.si===si&&b.yr==yr).reduce((a,b)=>a+(+b.tot),0);
+  const tLC=D.ledCharges.filter(x=>x.si===si&&x.dt&&x.dt.startsWith(String(yr))).reduce((a,x)=>a+(+x.amt||0),0);
+  const tPCash=D.rcps.filter(r=>r.si===si&&r.yr==yr).reduce((a,r)=>a+(+r.a),0);
+  const tPDisc=D.rcps.filter(r=>r.si===si&&r.yr==yr).reduce((a,r)=>a+(+r.disc||0),0);
+  const tP=tPCash+tPDisc;
+  const tDebit=tB+tLC;
   document.getElementById('ledDiv').innerHTML=`<div class="fsec">
     <div style="text-align:center;margin-bottom:12px">
       <div style="font-size:20px;font-weight:700;color:var(--pr)">${sc.name}</div>
@@ -1052,13 +1536,13 @@ function renderLedger(){
       <div style="font-size:13px;font-weight:700;margin-top:6px;border:1px solid var(--bd);padding:4px 12px;display:inline-block">STUDENT PERSONAL LEDGER — ${yr} BS</div>
     </div>
     <table style="width:100%;font-size:11px;border-collapse:collapse;margin-bottom:10px">
-      <tr><td style="padding:3px"><strong>Name:</strong> ${s?.nm}</td><td><strong>Class:</strong> ${c?c.n+(c.s?' '+c.s:''):'-'}</td><td><strong>Roll:</strong> ${s?.ro||'-'}</td></tr>
-      <tr><td><strong>Father:</strong> ${s?.ft||'-'}</td><td><strong>Phone:</strong> ${s?.ph||'-'}</td><td><strong>ID:</strong> ${s?.id}</td></tr>
+      <tr><td style="padding:3px"><strong>Name:</strong> ${s?.nm}</td><td><strong>Class:</strong> ${c?c.n+(c.s?' '+c.s:''):'-'}</td><td><strong>Category:</strong> ${s?.cat||'-'}</td><td><strong>Roll:</strong> ${s?.ro||'-'}</td></tr>
+      <tr><td><strong>Father:</strong> ${s?.ft||'-'}</td><td><strong>Phone:</strong> ${s?.ph||'-'}</td><td colspan="2"><strong>ID:</strong> ${s?.id}</td></tr>
     </table>
     <div class="tw"><table>
       <thead><tr><th>Date / Period</th><th>Narration</th><th>Reference</th><th style="text-align:right">Debit (Bill)</th><th style="text-align:right">Credit (Paid)</th><th style="text-align:right">Running Balance</th></tr></thead>
       <tbody>${rows||`<tr><td colspan="6" style="text-align:center;color:var(--mu);padding:12px">No transactions for ${yr} BS</td></tr>`}</tbody>
-      <tfoot><tr><td colspan="3"><strong>TOTAL — ${yr} BS</strong></td><td style="text-align:right"><strong>Rs.${tB.toLocaleString()}</strong></td><td style="text-align:right"><strong>Rs.${tP.toLocaleString()}</strong></td><td style="text-align:right;color:${bal>0?'#ff9':'#9f9'}"><strong>Rs.${bal.toLocaleString()}</strong></td></tr></tfoot>
+      <tfoot><tr><td colspan="3"><strong>TOTAL — ${yr} BS</strong></td><td style="text-align:right"><strong>Rs.${tDebit.toLocaleString()}</strong>${tLC>0?`<br><span style="font-size:9px;font-weight:400">(Bills Rs.${tB.toLocaleString()} + Charges Rs.${tLC.toLocaleString()})</span>`:''}</td><td style="text-align:right"><strong>Rs.${tP.toLocaleString()}</strong>${tPDisc>0?`<br><span style="font-size:9px;font-weight:400">(Cash Rs.${tPCash.toLocaleString()} + Disc. Rs.${tPDisc.toLocaleString()})</span>`:''}</td><td style="text-align:right;color:${bal>0?'#ff9':'#9f9'}"><strong>Rs.${bal.toLocaleString()}</strong></td></tr></tfoot>
     </table></div>
   </div>`;
 }
@@ -1067,10 +1551,19 @@ function printLedger(){const s=D.stu.find(x=>x.id===document.getElementById('led
 // =====================================================
 // EXAMS
 // =====================================================
-function openExamM(){document.getElementById('exIx').value=-1;document.getElementById('examMT').textContent='ADD EXAM';['exNm','exSt','exEn'].forEach(id=>document.getElementById(id).value='');document.getElementById('exSs').value='Upcoming';fillDDs();openM('mExam');}
-function saveExam(){const n=document.getElementById('exNm').value.trim();if(!n){toast('Exam name required','err');return;}const ix=parseInt(document.getElementById('exIx').value);const e={id:ix>=0?D.exams[ix].id:'EXM'+Date.now(),n,y:document.getElementById('exYr').value,s:document.getElementById('exSt').value,e:document.getElementById('exEn').value,ci:document.getElementById('exCl').value,st:document.getElementById('exSs').value};if(ix>=0)D.exams[ix]=e;else D.exams.push(e);sv('exams');closeM('mExam');renderExams();fillDDs();toast('Exam saved');}
+function openExamM(){
+  document.getElementById('exIx').value=-1;
+  document.getElementById('examMT').textContent='ADD EXAM';
+  ['exNm','exSt','exEn'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('exYr').value=D.cfg.year||2081;
+  document.getElementById('exCl').value='';
+  document.getElementById('exSs').value='Upcoming';
+  fillDDs();
+  openM('mExamModal');
+}
+function saveExam(){const n=document.getElementById('exNm').value.trim();if(!n){toast('Exam name required','err');return;}const ix=parseInt(document.getElementById('exIx').value);const e={id:ix>=0?D.exams[ix].id:'EXM'+Date.now(),n,y:document.getElementById('exYr').value,s:document.getElementById('exSt').value,e:document.getElementById('exEn').value,ci:document.getElementById('exCl').value,st:document.getElementById('exSs').value};if(ix>=0)D.exams[ix]=e;else D.exams.push(e);sv('exams');closeM('mExamModal');renderExams();fillDDs();toast('Exam saved');}
 function renderExams(){document.getElementById('examTbl').innerHTML=D.exams.map((e,i)=>{const c=D.cls.find(x=>x.id===e.ci);const sb={Completed:'bok2',Ongoing:'bwrn',Upcoming:'binf'}[e.st]||'binf';return`<tr><td>${i+1}</td><td><strong>${e.n}</strong></td><td>${e.y}</td><td>${e.s||'-'}</td><td>${e.e||'-'}</td><td>${c?c.n:'All Classes'}</td><td><span class="badge ${sb}">${e.st}</span></td><td><button class="btn bxs bse" onclick="editExam(${i})">EDIT</button> <button class="btn bxs bdg" onclick="delExam(${i})">DEL</button></td></tr>`;}).join('')||`<tr><td colspan="8" style="text-align:center;color:var(--mu);padding:12px">No exams</td></tr>`;}
-function editExam(ix){const e=D.exams[ix];document.getElementById('exIx').value=ix;document.getElementById('examMT').textContent='EDIT EXAM';document.getElementById('exNm').value=e.n;document.getElementById('exYr').value=e.y;document.getElementById('exSt').value=e.s||'';document.getElementById('exEn').value=e.e||'';document.getElementById('exCl').value=e.ci||'';document.getElementById('exSs').value=e.st;openM('mExam');}
+function editExam(ix){const e=D.exams[ix];document.getElementById('exIx').value=ix;document.getElementById('examMT').textContent='EDIT EXAM';document.getElementById('exNm').value=e.n;document.getElementById('exYr').value=e.y;document.getElementById('exSt').value=e.s||'';document.getElementById('exEn').value=e.e||'';fillDDs();document.getElementById('exCl').value=e.ci||'';document.getElementById('exSs').value=e.st;openM('mExamModal');}
 function delExam(ix){if(!confirm('Delete?'))return;D.exams.splice(ix,1);sv('exams');renderExams();fillDDs();}
 
 // =====================================================
@@ -1105,17 +1598,127 @@ function renderResults(){
 function printResults(){showPP('EXAM RESULTS',document.getElementById('resDiv').innerHTML);}
 
 // =====================================================
+// STUDENT MARKSHEET — individual, 2-per-page A4 landscape
+// =====================================================
+function buildMarksheet(si,eid,cid){
+  const s=D.stu.find(x=>x.id===si);if(!s)return'';
+  const c=D.cls.find(x=>x.id===cid),exam=D.exams.find(e=>e.id===eid),sc=D.cfg;
+  const subs=[...new Set(D.marks.filter(m=>m.ei===eid&&m.ci===cid).map(m=>m.sb))];
+  const sm=subs.map(sub=>({sub,m:D.marks.find(m=>m.ei===eid&&m.si===si&&m.sb===sub)}));
+  const tot=sm.reduce((a,x)=>a+(x.m?.ob||0),0),ftot=sm.reduce((a,x)=>a+(x.m?.full||0),0);
+  const pct=ftot?Math.round((tot/ftot)*100):0;
+  const overallPass=sm.every(x=>!x.m||x.m.ob>=x.m.pass);
+  // Rank within class for this exam
+  const classRows=D.stu.filter(x=>x.ci===cid&&x.st==='Active').map(x=>{
+    const xm=subs.map(sub=>D.marks.find(m=>m.ei===eid&&m.si===x.id&&m.sb===sub));
+    const xt=xm.reduce((a,m)=>a+(m?.ob||0),0),xf=xm.reduce((a,m)=>a+(m?.full||0),0);
+    return{id:x.id,pct:xf?Math.round((xt/xf)*100):0};
+  }).sort((a,b)=>b.pct-a.pct);
+  const rank=classRows.findIndex(x=>x.id===si)+1;
+  const subRows=sm.map(x=>{
+    const ob=x.m?.ob,full=x.m?.full||100,pass=x.m?.pass||40;
+    const pf=ob===undefined?'-':(ob>=pass?'PASS':'FAIL');
+    return`<tr style="border-bottom:1px solid #e8e8e8">
+      <td style="padding:5px 8px;font-weight:700">${x.sub}</td>
+      <td style="padding:5px 8px;text-align:center;font-weight:700">${full}</td>
+      <td style="padding:5px 8px;text-align:center;font-weight:700">${pass}</td>
+      <td style="padding:5px 8px;text-align:center;font-weight:700;font-size:12pt">${ob??'-'}</td>
+      <td style="padding:5px 8px;text-align:center;font-weight:700">${ob!==undefined?grd(ob,full):'-'}</td>
+      <td style="padding:5px 8px;text-align:center;font-weight:700;color:${pf==='PASS'?'#155724':pf==='FAIL'?'#6b0000':'#888'}">${pf}</td>
+    </tr>`;
+  }).join('');
+  return`<div class="inv-card" style="font-family:'Courier New',monospace;color:#111;background:#fff;font-weight:700;border:2px solid #1a3a6b;height:100%;box-sizing:border-box;padding:14px 16px;font-size:11pt;display:flex;flex-direction:column">
+<table style="width:100%;border-collapse:collapse;padding-bottom:10px;margin-bottom:10px;border-bottom:3px double #1a3a6b">
+  <tr><td style="width:62px;vertical-align:middle"><div style="width:56px;height:56px;border:2.5px solid #1a3a6b;display:flex;align-items:center;justify-content:center;font-size:26px;background:#eef1fb;overflow:hidden">${sc.logo?`<img src="${sc.logo}" style="width:100%;height:100%;object-fit:contain">`:'&#127979;'}</div></td>
+  <td style="padding-left:10px;vertical-align:middle">
+    <div style="font-size:18pt;font-weight:700;color:#1a3a6b;letter-spacing:.5px;line-height:1.15">${sc.name}</div>
+    <div style="font-size:9.5pt;color:#333;font-weight:700">${sc.addr} | ${sc.phone}</div>
+  </td>
+  <td style="text-align:right;vertical-align:middle;width:130px">
+    <div style="font-size:11.5pt;font-weight:700;color:#fff;background:#1a3a6b;padding:4px 10px;display:inline-block;letter-spacing:1px">MARKSHEET</div>
+    <div style="font-size:9pt;margin-top:5px;font-weight:700">${exam?.n||''} — ${exam?.y||''} BS</div>
+  </td></tr>
+</table>
+<table style="width:100%;border-collapse:collapse;margin-bottom:9px;border:1px solid #d0d8f0;background:#f7f9ff;font-size:10.5pt">
+  <tr><td style="padding:5px 8px;font-weight:700;width:55%">${s.nm}</td><td style="padding:5px 8px;font-weight:700;color:#b8860b">Roll: ${s.ro||'-'}</td></tr>
+  <tr style="background:#eef1fb"><td style="padding:5px 8px;font-weight:700">${c?c.n+(c.s?' '+c.s:''):'-'}${s.cat?' — '+s.cat:''}</td><td style="padding:5px 8px;font-weight:700">Student ID: ${s.id}</td></tr>
+  <tr><td style="padding:5px 8px;font-weight:700">Father: ${s.ft||'-'}</td><td style="padding:5px 8px;font-weight:700">DOB: ${s.db||'-'}</td></tr>
+</table>
+<table style="width:100%;border-collapse:collapse;border:1px solid #ddd;font-size:10.5pt">
+  <thead><tr style="background:#1a3a6b;color:#fff">
+    <th style="padding:6px 8px;text-align:left">Subject</th>
+    <th style="padding:6px 8px;text-align:center">Full</th>
+    <th style="padding:6px 8px;text-align:center">Pass</th>
+    <th style="padding:6px 8px;text-align:center">Obtained</th>
+    <th style="padding:6px 8px;text-align:center">Grade</th>
+    <th style="padding:6px 8px;text-align:center">Result</th>
+  </tr></thead>
+  <tbody>${subRows||'<tr><td colspan="6" style="padding:8px;text-align:center;color:#888">No marks recorded</td></tr>'}</tbody>
+</table>
+<table style="width:100%;border-collapse:collapse;border:1px solid #ddd;border-top:none;font-size:11pt;margin-top:2px">
+  <tr style="background:#f0f4dc"><td style="padding:6px 8px">Total Marks</td><td style="padding:6px 8px;text-align:right;font-weight:700">${tot} / ${ftot}</td></tr>
+  <tr style="background:#e8f0ff"><td style="padding:6px 8px">Percentage</td><td style="padding:6px 8px;text-align:right;font-weight:700">${pct}%</td></tr>
+  <tr style="background:#fff8e1"><td style="padding:6px 8px">Class Rank</td><td style="padding:6px 8px;text-align:right;font-weight:700">${rank} of ${classRows.length}</td></tr>
+  <tr style="background:#1a3a6b;color:#fff"><td style="padding:8px 8px;font-size:13pt;font-weight:700">FINAL GRADE</td><td style="padding:8px 8px;text-align:right;font-size:14pt;font-weight:700">${grd(tot,ftot)}</td></tr>
+  <tr style="background:${overallPass?'#d4edda':'#fde'}"><td style="padding:7px 8px;font-size:12pt;font-weight:700;color:${overallPass?'#155724':'#6b0000'}">OVERALL RESULT</td><td style="padding:7px 8px;text-align:right;font-size:12.5pt;font-weight:700;color:${overallPass?'#155724':'#6b0000'}">${overallPass?'PASS':'FAIL'}</td></tr>
+</table>
+<div style="flex:1"></div>
+<table style="width:100%;margin-top:14px;font-size:9.5pt;font-weight:700;border-top:1px dashed #ccc;padding-top:6px">
+  <tr>
+    <td style="text-align:center;width:34%"><div style="height:28px"></div><div style="border-top:1px solid #333;margin-top:2px;padding-top:2px">Class Teacher</div></td>
+    <td style="text-align:center;width:33%"><div style="height:28px"></div><div style="border-top:1px solid #333;margin-top:2px;padding-top:2px">Exam Coordinator</div></td>
+    <td style="text-align:center;width:33%">${sc.principalSig?`<img src="${sc.principalSig}" style="height:28px;object-fit:contain">`:'<div style="height:28px"></div>'}<div style="border-top:1px solid #333;margin-top:2px;padding-top:2px">Principal</div></td>
+  </tr>
+</table>
+</div>`;
+}
+function printMarksheets(){
+  const eid=document.getElementById('rExam').value,cid=document.getElementById('rCls').value;
+  if(!eid||!cid){toast('Select exam and class first','err');return;}
+  const exam=D.exams.find(e=>e.id===eid),cls=D.cls.find(c=>c.id===cid);
+  const students=D.stu.filter(s=>s.ci===cid&&s.st==='Active');
+  if(!students.length){toast('No students found in this class','err');return;}
+  const cards=students.map(s=>buildMarksheet(s.id,eid,cid));
+  showLandscapeInvoices(`MARKSHEETS — ${exam?.n||''} (${cls?.n||''})`,cards);
+}
+
+// =====================================================
 // REPORTS
 // =====================================================
 function renderFeeRpt(){
-  const yr=document.getElementById('rpYr').value,cf=document.getElementById('rpCls').value;
-  const rows=D.stu.filter(s=>s.st==='Active'&&(!cf||s.ci===cf)).map(s=>{const c=D.cls.find(x=>x.id===s.ci),b=D.bills.filter(x=>x.si===s.id&&x.yr==yr).reduce((a,x)=>a+(+x.tot),0),p=D.rcps.filter(x=>x.si===s.id&&x.yr==yr).reduce((a,x)=>a+(+x.a),0);return{s,c,b,p,d:b-p};});
-  const gB=rows.reduce((a,r)=>a+r.b,0),gP=rows.reduce((a,r)=>a+r.p,0),gD=rows.reduce((a,r)=>a+r.d,0);
-  document.getElementById('fRptD').innerHTML=`<div class="tw"><table><thead><tr><th>#</th><th>Student</th><th>Class</th><th>Total Billed</th><th>Total Paid</th><th>Balance</th><th>Status</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.s.nm}</td><td>${r.c?.n||'-'}</td><td>Rs.${r.b.toLocaleString()}</td><td>Rs.${r.p.toLocaleString()}</td><td style="color:${r.d>0?'var(--dg)':'var(--ok)'}"><strong>Rs.${r.d.toLocaleString()}</strong></td><td><span class="badge ${r.d<=0?'bok2':'berr'}">${r.d<=0?'CLEAR':'PENDING'}</span></td></tr>`).join('')}</tbody><tfoot><tr><td colspan="3"><strong>GRAND TOTAL</strong></td><td><strong>Rs.${gB.toLocaleString()}</strong></td><td><strong>Rs.${gP.toLocaleString()}</strong></td><td style="color:${gD>0?'#ff9':'#9f9'}"><strong>Rs.${gD.toLocaleString()}</strong></td><td></td></tr></tfoot></table></div>`;
+  const yr=document.getElementById('rpYr').value,cf=document.getElementById('rpCls').value,catf=document.getElementById('rpCat').value;
+  const rows=D.stu.filter(s=>s.st==='Active'&&(!cf||s.ci===cf)&&(!catf||s.cat===catf)).map(s=>{
+    const c=D.cls.find(x=>x.id===s.ci);
+    const b=D.bills.filter(x=>x.si===s.id&&x.yr==yr).reduce((a,x)=>a+(+x.tot),0);
+    const p=D.rcps.filter(x=>x.si===s.id&&x.yr==yr).reduce((a,x)=>a+(+x.a),0);
+    const disc=D.rcps.filter(x=>x.si===s.id&&x.yr==yr).reduce((a,x)=>a+(+x.disc||0),0);
+    return{s,c,b,p,disc,d:b-p-disc};
+  });
+  const gB=rows.reduce((a,r)=>a+r.b,0),gP=rows.reduce((a,r)=>a+r.p,0),gDisc=rows.reduce((a,r)=>a+r.disc,0),gD=rows.reduce((a,r)=>a+r.d,0);
+  document.getElementById('fRptD').innerHTML=`<div class="tw"><table><thead><tr><th>#</th><th>Student</th><th>Class</th><th>Category</th><th>Total Billed</th><th>Total Paid</th><th>Discount</th><th>Balance</th><th>Status</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.s.nm}</td><td>${r.c?.n||'-'}</td><td><span class="badge binf">${r.s.cat||'-'}</span></td><td>Rs.${r.b.toLocaleString()}</td><td>Rs.${r.p.toLocaleString()}</td><td style="color:var(--ac)">Rs.${r.disc.toLocaleString()}</td><td style="color:${r.d>0?'var(--dg)':'var(--ok)'}"><strong>Rs.${r.d.toLocaleString()}</strong></td><td><span class="badge ${r.d<=0?'bok2':'berr'}">${r.d<=0?'CLEAR':'PENDING'}</span></td></tr>`).join('')}</tbody><tfoot><tr><td colspan="4"><strong>GRAND TOTAL</strong></td><td><strong>Rs.${gB.toLocaleString()}</strong></td><td><strong>Rs.${gP.toLocaleString()}</strong></td><td><strong>Rs.${gDisc.toLocaleString()}</strong></td><td style="color:${gD>0?'#ff9':'#9f9'}"><strong>Rs.${gD.toLocaleString()}</strong></td><td></td></tr></tfoot></table></div>`;
 }
 function renderDefaulters(){
-  const def=D.stu.filter(s=>s.st==='Active'&&getStuBal(s.id)>0);
-  document.getElementById('defD').innerHTML=`<div class="tw"><table><thead><tr><th>#</th><th>Student</th><th>Class</th><th>Phone</th><th>Balance Due</th></tr></thead><tbody>${def.map((s,i)=>{const c=D.cls.find(x=>x.id===s.ci);return`<tr><td>${i+1}</td><td>${s.nm}</td><td>${c?.n||'-'}</td><td>${s.ph||'-'}</td><td style="color:var(--dg)"><strong>Rs.${getStuBal(s.id).toLocaleString()}</strong></td></tr>`;}).join('')||`<tr><td colspan="5" style="text-align:center;color:var(--ok);padding:12px">&#10003; No defaulters! All fees cleared.</td></tr>`}</tbody></table></div>`;
+  const cf=document.getElementById('defFCls')?.value||'',catf=document.getElementById('defFCat')?.value||'';
+  const def=D.stu.filter(s=>s.st==='Active'&&(!cf||s.ci===cf)&&(!catf||s.cat===catf)&&getStuBal(s.id)>0);
+  const grandTotal=def.reduce((a,s)=>a+getStuBal(s.id),0);
+  document.getElementById('defD').innerHTML=`<div class="tw"><table><thead><tr><th>#</th><th>Student</th><th>Class</th><th>Category</th><th>Phone</th><th>Balance Due</th></tr></thead><tbody>${def.map((s,i)=>{const c=D.cls.find(x=>x.id===s.ci);return`<tr><td>${i+1}</td><td>${s.nm}</td><td>${c?.n||'-'}</td><td><span class="badge binf">${s.cat||'-'}</span></td><td>${s.ph||'-'}</td><td style="color:var(--dg)"><strong>Rs.${getStuBal(s.id).toLocaleString()}</strong></td></tr>`;}).join('')||`<tr><td colspan="6" style="text-align:center;color:var(--ok);padding:12px">&#10003; No defaulters! All fees cleared.</td></tr>`}</tbody>${def.length?`<tfoot><tr><td colspan="5"><strong>TOTAL OUTSTANDING (${def.length} students)</strong></td><td><strong>Rs.${grandTotal.toLocaleString()}</strong></td></tr></tfoot>`:''}</table></div>`;
+}
+function printDuesList(){
+  const cf=document.getElementById('defFCls')?.value||'',catf=document.getElementById('defFCat')?.value||'';
+  const clsName=cf?(D.cls.find(c=>c.id===cf)?.n||''):'All Classes';
+  const filterLabel=`Filters: Class — ${clsName}${catf?' | Category — '+catf:' | Category — All'}`;
+  const sc=D.cfg;
+  const content=`<div style="font-family:'Courier New',monospace;font-size:11pt">
+    <div style="text-align:center;margin-bottom:10px">
+      <div style="font-size:16px;font-weight:700;color:var(--pr)">${sc.name}</div>
+      <div style="font-size:11px;color:var(--mu)">${sc.addr}</div>
+      <div style="font-size:13px;font-weight:700;margin-top:6px">DUES LIST — DEFAULTERS</div>
+      <div style="font-size:10px;color:var(--mu)">${filterLabel}</div>
+      <div style="font-size:9px;color:var(--mu)">Printed: ${fmtBS(todayBS())}</div>
+    </div>
+    ${document.getElementById('defD').innerHTML}
+  </div>`;
+  showPP('DUES LIST — DEFAULTERS',content);
 }
 function renderColRpt(){
   const mon=document.getElementById('rpMon').value,yr=document.getElementById('rpCYr').value;
@@ -1127,17 +1730,22 @@ function renderColRpt(){
 // PRINT STUDENT LIST
 // =====================================================
 function printStuList(){
-  const sc=D.cfg,b=adToBS(new Date()),list=D.stu.filter(s=>s.st==='Active');
+  const sc=D.cfg,b=adToBS(new Date());
+  const cf=document.getElementById('stuFC')?.value||'',catf=document.getElementById('stuFCat')?.value||'';
+  const list=D.stu.filter(s=>s.st==='Active'&&(!cf||s.ci===cf)&&(!catf||s.cat===catf));
+  const clsName=cf?(D.cls.find(c=>c.id===cf)?.n||''):'All Classes';
+  const filterLabel=`Filters: Class — ${clsName} &nbsp;|&nbsp; Category — ${catf||'All'}`;
   showPP('STUDENT LIST',`<div style="font-family:'Courier New',monospace;font-size:11pt">
     <div style="text-align:center;margin-bottom:14px">
       <div style="font-size:20pt;font-weight:700;color:#1a3a6b">${sc.name}</div>
       <div style="font-size:11pt;color:#444;font-weight:700">${sc.addr} | Tel: ${sc.phone}</div>
       <div style="font-size:14pt;font-weight:700;margin-top:8px;border-top:2px solid #1a3a6b;border-bottom:2px solid #1a3a6b;padding:4px">STUDENT LIST</div>
-      <div style="font-size:9pt;color:#888">Printed: ${b.d} ${NM[b.m-1]} ${b.y} BS &nbsp;|&nbsp; Total Active: ${list.length}</div>
+      <div style="font-size:9.5pt;color:#666;margin-top:4px">${filterLabel}</div>
+      <div style="font-size:9pt;color:#888">Printed: ${b.d} ${NM[b.m-1]} ${b.y} BS &nbsp;|&nbsp; Total: ${list.length}</div>
     </div>
     <table style="width:100%;border-collapse:collapse">
-      <thead><tr style="background:#1a3a6b;color:#fff">${['#','ID','Name','Class','Roll','Father','Phone','DOB (BS)'].map(h=>`<th style="padding:5px 8px">${h}</th>`).join('')}</tr></thead>
-      <tbody>${list.map((s,i)=>{const c=D.cls.find(x=>x.id===s.ci);return`<tr style="background:${i%2===0?'#f5f5dc':'#fff'}">${[i+1,s.id,`<strong>${s.nm}</strong>`,c?c.n+(c.s?' '+c.s:''):'-',s.ro||'-',s.ft||'-',s.ph||'-',s.db||'-'].map(v=>`<td style="padding:4px 8px;border-bottom:1px solid #ddd">${v}</td>`).join('')}</tr>`;}).join('')}</tbody>
+      <thead><tr style="background:#1a3a6b;color:#fff">${['#','ID','Name','Class','Category','Roll','Father','Phone','DOB (BS)'].map(h=>`<th style="padding:5px 8px">${h}</th>`).join('')}</tr></thead>
+      <tbody>${list.map((s,i)=>{const c=D.cls.find(x=>x.id===s.ci);return`<tr style="background:${i%2===0?'#f5f5dc':'#fff'}">${[i+1,s.id,`<strong>${s.nm}</strong>`,c?c.n+(c.s?' '+c.s:''):'-',s.cat||'-',s.ro||'-',s.ft||'-',s.ph||'-',s.db||'-'].map(v=>`<td style="padding:4px 8px;border-bottom:1px solid #ddd">${v}</td>`).join('')}</tr>`;}).join('')}</tbody>
     </table>
   </div>`);
 }
@@ -1191,74 +1799,337 @@ function addSub(){const v=document.getElementById('newSub').value.trim();if(!v||
 function delSub(i){D.subs.splice(i,1);sv('subs');renderSubs();}
 function renderSubs(){document.getElementById('subList').innerHTML=D.subs.map((s,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 7px;border-bottom:1px solid var(--bd2)"><span>${s}</span><button class="btn bxs bdg" onclick="delSub(${i})">X</button></div>`).join('');}
 
+
 // =====================================================
-// GOOGLE SHEETS BACKUP
+// GOOGLE SHEETS — REAL-TIME TWO-WAY LIVE SYNC ENGINE
 // =====================================================
-function saveGsUrl(){D.cfg.gsUrl=document.getElementById('gsUrl').value;sv('cfg');toast('GS URL saved');}
-async function testGS(){const url=document.getElementById('gsUrl').value;if(!url){document.getElementById('gsTR').innerHTML='<div class="alert aerr">No URL set.</div>';return;}document.getElementById('gsTR').innerHTML='<div class="alert ainf">Testing connection &amp; auto-creating sheet tabs...</div>';try{await fetch(url+'?action=ping',{method:'GET',mode:'no-cors'});document.getElementById('gsTR').innerHTML='<div class="alert aok">Connected! Your Google Sheet has auto-created its tabs. You can now enable Auto-Save below.</div>';}catch(e){document.getElementById('gsTR').innerHTML=`<div class="alert aerr">Error: ${e.message}</div>`;}}
-function buildBackupPayload(){
-  return JSON.stringify({action:'backup',ts:new Date().toISOString(),data:{stu:D.stu,cls:D.cls,feeH:D.feeH,cFees:D.cFees,bills:D.bills,rcps:D.rcps,exams:D.exams,marks:D.marks}});
+const SYNC_INTERVAL = 15000; // 15 seconds
+let _syncTimer = null;
+let _isSyncing = false;
+let _lastPushTs = 0;
+
+function saveGsUrl(){
+  D.cfg.gsUrl = document.getElementById('gsUrl').value.trim();
+  sv('cfg');
+  toast('Google Sheets URL saved');
 }
-async function backupGS(){
-  const url=D.cfg.gsUrl;if(!url){alert('Set Google Sheets URL in Data Backup section first');return;}
-  document.getElementById('bkSt').innerHTML='<div class="alert ainf">Sending backup to Google Sheets (sheet tabs auto-created if missing)...</div>';
+
+async function testGS(){
+  const url = document.getElementById('gsUrl').value.trim();
+  if(!url){document.getElementById('gsTR').innerHTML='<div class="alert aerr">No URL set. Paste your Google Apps Script Web App URL above.</div>';return;}
+
+  if(!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(url)){
+    document.getElementById('gsTR').innerHTML=`<div class="alert aerr">
+      &#9888; <strong>This doesn't look like a valid Web App URL.</strong><br>
+      It must look exactly like:<br>
+      <code style="background:#fff;padding:2px 6px;border:1px solid #ccc">https://script.google.com/macros/s/AKfycb.../exec</code><br>
+      It must end in <strong>/exec</strong> (not /dev, and not the script editor link).
+    </div>`;
+    return;
+  }
+
+  document.getElementById('gsTR').innerHTML='<div class="alert ainf">&#9203; Connecting and auto-creating sheet tabs...</div>';
+
   try{
-    await fetch(url,{method:'POST',mode:'no-cors',body:buildBackupPayload(),headers:{'Content-Type':'application/json'}});
-    logBk('Google Sheets (Manual)','Sent');
-    document.getElementById('bkSt').innerHTML='<div class="alert aok">Backup sent! Check your Google Sheet for data.</div>';
-  }catch(e){document.getElementById('bkSt').innerHTML=`<div class="alert aerr">Failed: ${e.message}</div>`;}
-}
-// ---- AUTO-SAVE EVERY 15 SECONDS ----
-let _autoSaveTimer=null;
-const AUTO_SAVE_INTERVAL=15000; // 15 seconds
-async function silentBackupGS(){
-  const url=D.cfg.gsUrl;
-  if(!url)return;
-  try{
-    await fetch(url,{method:'POST',mode:'no-cors',body:buildBackupPayload(),headers:{'Content-Type':'application/json'}});
-    const now=new Date();
-    D.cfg.lastAutoSync=now.toISOString();sv('cfg');
-    const el=document.getElementById('autoSaveLastSync');
-    if(el)el.textContent='&#10003; Last synced: '+now.toLocaleTimeString();
-    const st=document.getElementById('autoSaveStatus');
-    if(st){st.textContent='SYNCING...';st.className='badge bok2';setTimeout(()=>{if(D.cfg.autoSave){st.textContent='ON';st.className='badge bok2';}},800);}
+    const r = await fetch(url+'?action=ping', {method:'GET'});
+    if(!r.ok){
+      document.getElementById('gsTR').innerHTML=`<div class="alert aerr">
+        &#9888; <strong>Server responded with HTTP ${r.status}.</strong><br>
+        ${diagnoseStatus(r.status)}
+      </div>`;
+      return;
+    }
+    let j;
+    try{ j = await r.json(); }
+    catch(parseErr){
+      document.getElementById('gsTR').innerHTML=`<div class="alert aerr">
+        &#9888; <strong>Got a response, but it wasn't valid JSON.</strong><br>
+        This usually means Google showed a login/permission page instead of running your script.<br>
+        <strong>Fix:</strong> In Apps Script, go to Deploy &rarr; Manage deployments &rarr; Edit (pencil) &rarr;
+        set <strong>"Who has access"</strong> to <strong>Anyone</strong>, then click Deploy again.
+      </div>`;
+      return;
+    }
+    document.getElementById('gsTR').innerHTML=`<div class="alert aok">&#10003; Connected! Sheet tabs auto-created. Message: "${j.message||'OK'}"<br>You can now enable Live Sync below.</div>`;
   }catch(e){
-    const st=document.getElementById('autoSaveStatus');
-    if(st){st.textContent='ERROR';st.className='badge berr';}
+    document.getElementById('gsTR').innerHTML=`<div class="alert aerr">
+      &#9888; <strong>Connection failed:</strong> ${e.message}<br><br>
+      <strong>Most common causes (check in this order):</strong>
+      <ol style="margin:6px 0 0 18px;padding:0">
+        <li><strong>Not redeployed after editing the script.</strong> Every time you change the code you must go to
+        <strong>Deploy &rarr; Manage deployments &rarr; Edit (pencil icon) &rarr; New version &rarr; Deploy</strong>.
+        Saving the file alone does NOT update the live URL.</li>
+        <li><strong>Access not set to "Anyone".</strong> In the deployment settings, "Who has access" must be
+        <strong>Anyone</strong> (not "Only myself" / "Anyone with Google account").</li>
+        <li><strong>Wrong URL copied.</strong> It must end in <code>/exec</code>, not <code>/dev</code>, and not be the
+        script editor address (script.google.com/home/projects/...).</li>
+        <li><strong>First-time authorization not completed.</strong> Open the /exec URL directly in a new browser tab once —
+        if Google shows a warning screen, click "Advanced" &rarr; "Go to (your project) (unsafe)" to grant permission once.</li>
+      </ol>
+    </div>`;
   }
 }
-function startAutoSave(){
-  stopAutoSave();
-  if(!D.cfg.gsUrl){toast('Set and save your Google Sheets URL first','err');document.getElementById('autoSaveChk').checked=false;return;}
-  _autoSaveTimer=setInterval(silentBackupGS,AUTO_SAVE_INTERVAL);
-  silentBackupGS(); // immediate first sync
-  const st=document.getElementById('autoSaveStatus');if(st){st.textContent='ON';st.className='badge bok2';}
+function diagnoseStatus(status){
+  if(status===401||status===403) return 'This means the deployment needs authorization, or "Who has access" is not set to "Anyone". Re-check your deployment settings.';
+  if(status===404) return 'The URL itself looks wrong or the deployment was deleted. Re-copy the Web App URL from Deploy → Manage deployments.';
+  if(status>=500) return 'Google Apps Script had an internal error — check the Apps Script editor\'s "Executions" log for details.';
+  return 'Re-check your deployment settings and try again.';
 }
-function stopAutoSave(){
-  if(_autoSaveTimer){clearInterval(_autoSaveTimer);_autoSaveTimer=null;}
-  const st=document.getElementById('autoSaveStatus');if(st){st.textContent='OFF';st.className='badge bwrn';}
+
+// --- BUILD PUSH PAYLOAD ---
+function buildPushPayload(){
+  return JSON.stringify({
+    action:'push',
+    ts: new Date().toISOString(),
+    data:{
+      stu:D.stu, cls:D.cls, feeH:D.feeH, cFees:D.cFees,
+      bills:D.bills, rcps:D.rcps, exams:D.exams, marks:D.marks,
+      adjs:D.adjs, subs:D.subs, ledCharges:D.ledCharges,
+      billOv:D.billOv, extras:D.extras, cfg:{
+        name:D.cfg.name, addr:D.cfg.addr, dist:D.cfg.dist,
+        prov:D.cfg.prov, phone:D.cfg.phone, email:D.cfg.email,
+        reg:D.cfg.reg, pan:D.cfg.pan, principal:D.cfg.principal,
+        year:D.cfg.year, rcpPfx:D.cfg.rcpPfx, billPfx:D.cfg.billPfx, stuPfx:D.cfg.stuPfx
+      }
+    }
+  });
 }
-function toggleAutoSave(){
-  const on=document.getElementById('autoSaveChk').checked;
-  D.cfg.autoSave=on;sv('cfg');
-  if(on){startAutoSave();toast('Auto-save enabled — syncing every 15 seconds');}
-  else{stopAutoSave();toast('Auto-save disabled');}
+
+// --- PUSH local data → Google Sheets ---
+async function pushToGS(){
+  const url = D.cfg.gsUrl;
+  if(!url) return false;
+  try{
+    await fetch(url, {
+      method:'POST', mode:'no-cors',
+      body: buildPushPayload(),
+      headers:{'Content-Type':'application/json'}
+    });
+    _lastPushTs = Date.now();
+    return true;
+  }catch(e){ return false; }
 }
-function initAutoSaveUI(){
-  const chk=document.getElementById('autoSaveChk');
-  if(!chk)return;
-  chk.checked=!!D.cfg.autoSave;
-  if(D.cfg.lastAutoSync){
-    const el=document.getElementById('autoSaveLastSync');
-    if(el)el.textContent='Last synced: '+new Date(D.cfg.lastAutoSync).toLocaleString();
+
+// --- PULL latest data ← Google Sheets ---
+async function pullFromGS(manual=false){
+  const url = D.cfg.gsUrl;
+  if(!url){
+    if(manual) toast('No Google Sheets URL set','err');
+    return;
   }
-  if(D.cfg.autoSave&&D.cfg.gsUrl)startAutoSave();
-  else{const st=document.getElementById('autoSaveStatus');if(st){st.textContent='OFF';st.className='badge bwrn';}}
+  if(manual){
+    setSyncStatus('PULLING...','binf');
+    showSyncMsg('<div class="alert ainf">&#11015; Pulling latest data from Google Sheets...</div>');
+  }
+  try{
+    const r = await fetch(url + '?action=pull', {method:'GET'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const j = await r.json();
+    if(j.status !== 'ok' || !j.data){
+      if(manual) showSyncMsg('<div class="alert aerr">No data returned from sheet yet. Push data first.</div>');
+      return;
+    }
+    mergePulledData(j.data);
+    const now = new Date();
+    D.cfg.lastSync = now.toISOString();
+    sv('cfg');
+    updateSyncTimeDisplay(now);
+    if(manual){
+      setSyncStatus('ON','bok2');
+      showSyncMsg('<div class="alert aok">&#10003; Live data pulled successfully from Google Sheets!</div>');
+    }
+  }catch(e){
+    if(manual) showSyncMsg(`<div class="alert aerr">&#9888; Pull failed: ${e.message}</div>`);
+    setSyncStatus('ERR','berr');
+  }
 }
-function exportJSON(){const a=document.createElement('a');a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify({exported:new Date().toISOString(),...D},null,2));a.download=`sms_backup_${todayBS()}.json`;a.click();logBk('Local JSON','Exported');}
-function restoreJSON(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const res=JSON.parse(ev.target.result);if(!confirm('Restore will OVERWRITE all current data. Continue?'))return;['stu','cls','feeH','cFees','bills','rcps','exams','marks','cfg','subs'].forEach(k=>{if(res[k]){D[k]=res[k];sv(k);}});applyCfg();renderDashboard();toast('Data restored!');}catch(err){alert('Invalid backup: '+err.message);}};r.readAsText(f);e.target.value='';}
-function logBk(tp,st){D.bkLog.unshift({dt:new Date().toLocaleString(),tp,rec:D.stu.length+D.rcps.length,st});if(D.bkLog.length>50)D.bkLog=D.bkLog.slice(0,50);sv('bkLog');renderBkLog();}
-function renderBkLog(){document.getElementById('bkLog').innerHTML=D.bkLog.slice(0,12).map(l=>`<tr><td>${l.dt}</td><td>${l.tp}</td><td>${l.rec}</td><td><span class="badge bok2">${l.st}</span></td></tr>`).join('')||`<tr><td colspan="4" style="text-align:center;color:var(--mu);padding:12px">No backup log</td></tr>`;}
+
+// --- MERGE pulled data into local D, refresh all active panels ---
+function mergePulledData(remote){
+  const keys = ['stu','cls','feeH','cFees','bills','rcps','exams','marks','adjs','subs','ledCharges','billOv','extras'];
+  let changed = false;
+  keys.forEach(k=>{
+    if(!remote[k]) return;
+    const localStr = JSON.stringify(D[k]);
+    const remoteStr = JSON.stringify(remote[k]);
+    if(localStr !== remoteStr){
+      D[k] = remote[k];
+      sv(k);
+      changed = true;
+    }
+  });
+  // Merge non-sensitive cfg fields only (never overwrite login credentials from remote)
+  if(remote.cfg){
+    const safeCfgKeys = ['name','addr','dist','prov','phone','email','reg','pan','principal','year','rcpPfx','billPfx','stuPfx'];
+    safeCfgKeys.forEach(k=>{
+      if(remote.cfg[k] !== undefined && remote.cfg[k] !== D.cfg[k]){
+        D.cfg[k] = remote.cfg[k];
+        changed = true;
+      }
+    });
+    sv('cfg');
+  }
+  if(changed) refreshAllPanels();
+}
+
+// --- Refresh whichever panel is currently visible ---
+function refreshAllPanels(){
+  fillDDs();
+  const active = document.querySelector('.panel.active');
+  if(!active) return;
+  const id = active.id.replace('p-','');
+  const refreshMap = {
+    dashboard: renderDashboard,
+    students:  renderStudents,
+    classes:   renderCls,
+    feeH:      renderFH,
+    clsFees:   renderCF,
+    feeAdj:    renderAdj,
+    billing:   renderBills,
+    receipts:  renderRcps,
+    ledger:    renderLedger,
+    exams:     renderExams,
+    results:   ()=>{},
+    reports:   ()=>{},
+    backup:    ()=>{ renderBkLog(); initLiveSyncUI(); },
+    setup:     applyCfg
+  };
+  if(refreshMap[id]) refreshMap[id]();
+  // Always refresh dashboard card counts
+  if(id !== 'dashboard') renderDashboard();
+}
+
+// --- ONE SYNC CYCLE: push then pull ---
+async function syncCycle(){
+  if(_isSyncing) return;
+  _isSyncing = true;
+  setSyncStatus('SYNCING...','binf');
+  const pushed = await pushToGS();
+  await pullFromGS(false);
+  if(pushed) setSyncStatus('LIVE','bok2');
+  _isSyncing = false;
+}
+
+// --- MANUAL BACKUP (one-off push with UI feedback) ---
+async function backupGS(){
+  const url = D.cfg.gsUrl;
+  if(!url){alert('Set Google Sheets URL in Data Backup section first.');return;}
+  document.getElementById('bkSt').innerHTML='<div class="alert ainf">&#9729; Sending backup...</div>';
+  const ok = await pushToGS();
+  if(ok){
+    logBk('Manual Backup','Pushed');
+    document.getElementById('bkSt').innerHTML='<div class="alert aok">&#10003; Backup sent to Google Sheets!</div>';
+  } else {
+    document.getElementById('bkSt').innerHTML='<div class="alert aerr">&#9888; Backup failed. Check your URL and connection.</div>';
+  }
+}
+
+// Silent push used by auto-save (kept for backward compatibility)
+async function silentBackupGS(manual=false){
+  if(manual) setSyncStatus('PUSHING...','binf');
+  const ok = await pushToGS();
+  const now = new Date();
+  if(ok){
+    D.cfg.lastSync = now.toISOString(); sv('cfg');
+    updateSyncTimeDisplay(now);
+    if(manual){ setSyncStatus('LIVE','bok2'); showSyncMsg('<div class="alert aok">&#10003; Data pushed to Google Sheets!</div>'); }
+  } else {
+    if(manual) showSyncMsg('<div class="alert aerr">Push failed. Check URL/connection.</div>');
+    setSyncStatus('ERR','berr');
+  }
+}
+
+// --- TIMER CONTROLS ---
+function startLiveSync(){
+  stopLiveSync();
+  if(!D.cfg.gsUrl){
+    toast('Set and save your Google Sheets URL first','err');
+    document.getElementById('liveSyncChk').checked = false;
+    return;
+  }
+  syncCycle(); // immediate first cycle
+  _syncTimer = setInterval(syncCycle, SYNC_INTERVAL);
+  setSyncStatus('LIVE','bok2');
+  toast('Live Sync enabled — push+pull every 15 seconds');
+}
+
+function stopLiveSync(){
+  if(_syncTimer){ clearInterval(_syncTimer); _syncTimer = null; }
+  setSyncStatus('OFF','bwrn');
+}
+
+function toggleLiveSync(){
+  const on = document.getElementById('liveSyncChk').checked;
+  D.cfg.liveSync = on; sv('cfg');
+  if(on) startLiveSync();
+  else { stopLiveSync(); toast('Live Sync disabled'); }
+}
+
+// --- UI HELPERS ---
+function setSyncStatus(text, cls){
+  const el = document.getElementById('liveSyncStatus');
+  if(el){ el.textContent = text; el.className = 'badge '+cls; }
+  // Also update topbar indicator
+  const tb = document.getElementById('topSyncDot');
+  if(tb){
+    tb.style.background = cls==='bok2'?'#4caf50': cls==='berr'?'#e53935':'#ff9800';
+    tb.title = 'Live Sync: '+text;
+  }
+}
+function showSyncMsg(html){
+  const el = document.getElementById('liveSyncMsg');
+  if(el) el.innerHTML = html;
+  setTimeout(()=>{ if(el) el.innerHTML=''; }, 5000);
+}
+function updateSyncTimeDisplay(d){
+  const el = document.getElementById('liveSyncLast');
+  if(el) el.textContent = '&#10003; Last synced: '+d.toLocaleTimeString()+' ('+d.toLocaleDateString()+')';
+}
+function initLiveSyncUI(){
+  const chk = document.getElementById('liveSyncChk');
+  if(!chk) return;
+  chk.checked = !!D.cfg.liveSync;
+  if(D.cfg.lastSync) updateSyncTimeDisplay(new Date(D.cfg.lastSync));
+  const running = !!_syncTimer;
+  setSyncStatus(running?'LIVE': D.cfg.liveSync?'LIVE':'OFF', running||D.cfg.liveSync?'bok2':'bwrn');
+  if(D.cfg.liveSync && D.cfg.gsUrl && !_syncTimer) startLiveSync();
+}
+
+// Export / Restore (local JSON)
+function exportJSON(){
+  const a=document.createElement('a');
+  a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify({exported:new Date().toISOString(),...D},null,2));
+  a.download=`sms_backup_${todayBS()}.json`;
+  a.click();
+  logBk('Local JSON Export','Done');
+}
+function restoreJSON(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const res=JSON.parse(ev.target.result);
+      if(!confirm('Restore will OVERWRITE all current data. Continue?'))return;
+      ['stu','cls','feeH','cFees','bills','rcps','exams','marks','adjs','cfg','subs','ledCharges','billOv','extras'].forEach(k=>{
+        if(res[k]){D[k]=res[k];sv(k);}
+      });
+      applyCfg();renderDashboard();fillDDs();
+      toast('Data restored from JSON!');
+    }catch(err){alert('Invalid backup file: '+err.message);}
+  };
+  r.readAsText(f);e.target.value='';
+}
+function logBk(tp,st){
+  D.bkLog.unshift({dt:new Date().toLocaleString(),tp,rec:D.stu.length+D.rcps.length,st});
+  if(D.bkLog.length>50) D.bkLog=D.bkLog.slice(0,50);
+  sv('bkLog');
+  renderBkLog();
+}
+function renderBkLog(){
+  document.getElementById('bkLog').innerHTML=D.bkLog.slice(0,12).map(l=>
+    `<tr><td>${l.dt}</td><td>${l.tp}</td><td>${l.rec}</td><td><span class="badge bok2">${l.st}</span></td></tr>`
+  ).join('')||`<tr><td colspan="4" style="text-align:center;color:var(--mu);padding:12px">No backup log yet</td></tr>`;
+}
 
 // =====================================================
 // TOAST
@@ -1272,9 +2143,27 @@ window.addEventListener('load',()=>{
   document.getElementById('lsName').textContent=D.cfg.name;
   if(D.cls.length===0){
     D.cls=[{id:'CLS1',n:'Class 1',s:'A',t:'Ram Prasad Sharma'},{id:'CLS2',n:'Class 2',s:'A',t:'Sita Devi Thapa'},{id:'CLS3',n:'Class 3',s:'B',t:'Hari Bahadur Gurung'}];
-    D.feeH=[{id:'FH1',n:'Tuition Fee',tp:'Monthly',fq:'Regular'},{id:'FH2',n:'Exam Fee',tp:'Yearly',fq:'Regular'},{id:'FH3',n:'Computer Fee',tp:'Monthly',fq:'Regular'},{id:'FH4',n:'Library Fee',tp:'Yearly',fq:'Regular'}];
-    D.cFees=[{id:'CF1',ci:'CLS1',yr:'2081',f:{FH1:800,FH2:2400,FH3:200,FH4:600}},{id:'CF2',ci:'CLS2',yr:'2081',f:{FH1:1000,FH2:2400,FH3:200,FH4:600}},{id:'CF3',ci:'CLS3',yr:'2081',f:{FH1:1200,FH2:2400,FH3:200,FH4:600}}];
-    D.stu=[{id:'STU-0001',nm:'Aarav Sharma',fn:'Aarav',mn:'',ln:'Sharma',ro:1,ci:'CLS1',db:'2074-05-10',gn:'Male',ad:'2081-01-01',ft:'Bikash Sharma',mt:'Sunita Sharma',ph:'9841000001',ar:'Kathmandu',st:'Active',rm:''},{id:'STU-0002',nm:'Priya Shrestha',fn:'Priya',mn:'',ln:'Shrestha',ro:2,ci:'CLS1',db:'2074-08-15',gn:'Female',ad:'2081-01-01',ft:'Nabin Shrestha',mt:'Kamala Shrestha',ph:'9841000002',ar:'Lalitpur',st:'Active',rm:''},{id:'STU-0003',nm:'Rohan Thapa',fn:'Rohan',mn:'',ln:'Thapa',ro:1,ci:'CLS2',db:'2073-02-20',gn:'Male',ad:'2081-01-01',ft:'Dilip Thapa',mt:'Meena Thapa',ph:'9841000003',ar:'Bhaktapur',st:'Active',rm:''},{id:'STU-0004',nm:'Anita Gurung',fn:'Anita',mn:'',ln:'Gurung',ro:2,ci:'CLS2',db:'2073-11-05',gn:'Female',ad:'2081-01-01',ft:'Mohan Gurung',mt:'Rita Gurung',ph:'9841000004',ar:'Pokhara',st:'Active',rm:''}];
+    D.feeH=[{id:'FH1',n:'Tuition Fee',tp:'Monthly',fq:'Regular'},{id:'FH2',n:'Exam Fee',tp:'Yearly',fq:'Regular'},{id:'FH3',n:'Computer Fee',tp:'Monthly',fq:'Regular'},{id:'FH4',n:'Library Fee',tp:'Yearly',fq:'Regular'},{id:'FH5',n:'Hostel/Boarding Fee',tp:'Monthly',fq:'Regular'}];
+    // Category-wise fees: Boarders pay extra hostel/boarding fee on top of tuition; Dayboarders pay normal tuition;
+    // One Time Dayboarder pays a flat reduced tuition (e.g. occasional attendance).
+    D.cFees=[
+      {id:'CF1',ci:'CLS1',cat:'Boarder',yr:'2081',f:{FH1:800,FH2:2400,FH3:200,FH4:600,FH5:5000}},
+      {id:'CF2',ci:'CLS1',cat:'Dayboarder',yr:'2081',f:{FH1:800,FH2:2400,FH3:200,FH4:600,FH5:0}},
+      {id:'CF3',ci:'CLS1',cat:'One Time Dayboarder',yr:'2081',f:{FH1:400,FH2:1200,FH3:100,FH4:300,FH5:0}},
+      {id:'CF4',ci:'CLS2',cat:'Boarder',yr:'2081',f:{FH1:1000,FH2:2400,FH3:200,FH4:600,FH5:5000}},
+      {id:'CF5',ci:'CLS2',cat:'Dayboarder',yr:'2081',f:{FH1:1000,FH2:2400,FH3:200,FH4:600,FH5:0}},
+      {id:'CF6',ci:'CLS2',cat:'One Time Dayboarder',yr:'2081',f:{FH1:500,FH2:1200,FH3:100,FH4:300,FH5:0}},
+      {id:'CF7',ci:'CLS3',cat:'Boarder',yr:'2081',f:{FH1:1200,FH2:2400,FH3:200,FH4:600,FH5:5000}},
+      {id:'CF8',ci:'CLS3',cat:'Dayboarder',yr:'2081',f:{FH1:1200,FH2:2400,FH3:200,FH4:600,FH5:0}},
+      {id:'CF9',ci:'CLS3',cat:'One Time Dayboarder',yr:'2081',f:{FH1:600,FH2:1200,FH3:100,FH4:300,FH5:0}}
+    ];
+    D.stu=[
+      {id:'STU-0001',nm:'Aarav Sharma',fn:'Aarav',mn:'',ln:'Sharma',ro:1,ci:'CLS1',cat:'Boarder',db:'2074-05-10',gn:'Male',ad:'2081-01-01',ft:'Bikash Sharma',mt:'Sunita Sharma',ph:'9841000001',ar:'Kathmandu',st:'Active',rm:''},
+      {id:'STU-0002',nm:'Priya Shrestha',fn:'Priya',mn:'',ln:'Shrestha',ro:2,ci:'CLS1',cat:'Dayboarder',db:'2074-08-15',gn:'Female',ad:'2081-01-01',ft:'Nabin Shrestha',mt:'Kamala Shrestha',ph:'9841000002',ar:'Lalitpur',st:'Active',rm:''},
+      {id:'STU-0003',nm:'Rohan Thapa',fn:'Rohan',mn:'',ln:'Thapa',ro:1,ci:'CLS2',cat:'Dayboarder',db:'2073-02-20',gn:'Male',ad:'2081-01-01',ft:'Dilip Thapa',mt:'Meena Thapa',ph:'9841000003',ar:'Bhaktapur',st:'Active',rm:''},
+      {id:'STU-0004',nm:'Anita Gurung',fn:'Anita',mn:'',ln:'Gurung',ro:2,ci:'CLS2',cat:'Boarder',db:'2073-11-05',gn:'Female',ad:'2081-01-01',ft:'Mohan Gurung',mt:'Rita Gurung',ph:'9841000004',ar:'Pokhara',st:'Active',rm:''},
+      {id:'STU-0005',nm:'Sushant Khadka',fn:'Sushant',mn:'',ln:'Khadka',ro:3,ci:'CLS3',cat:'One Time Dayboarder',db:'2072-09-12',gn:'Male',ad:'2081-01-01',ft:'Gopal Khadka',mt:'Laxmi Khadka',ph:'9841000005',ar:'Bhaktapur',st:'Active',rm:''}
+    ];
     ['cls','feeH','cFees','stu'].forEach(k=>sv(k));
   }
 });
