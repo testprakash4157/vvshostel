@@ -37,14 +37,14 @@ body{font-family:var(--fn);font-size:12px;background:var(--bg);color:var(--tx);m
 .tbtt{font-size:13px;font-weight:700;letter-spacing:1px;}
 .tbr{display:flex;gap:10px;align-items:center;font-size:11px;}
 .npd{color:#ffd700;font-weight:700;}
-.layout{display:flex;min-height:calc(100vh - 38px);}
-.sidebar{width:var(--sw);background:#0c1e40;border-right:2px solid var(--ac);flex-shrink:0;overflow-y:auto;}
+.layout{display:flex;min-height:calc(100vh - 38px);align-items:flex-start;}
+.sidebar{width:var(--sw);background:#0c1e40;border-right:2px solid var(--ac);flex-shrink:0;overflow-y:auto;position:sticky;top:38px;max-height:calc(100vh - 38px);align-self:flex-start;}
 .sg{border-bottom:1px solid #1a3060;}
 .sgl{font-size:9px;color:#6a8fc0;padding:8px 10px 3px;text-transform:uppercase;letter-spacing:1.5px;}
 .ni{display:block;width:100%;text-align:left;padding:7px 12px;color:#b8cce8;font-family:var(--fn);font-size:11px;cursor:pointer;border:none;background:none;border-left:3px solid transparent;}
 .ni:hover{background:#1a3a6b;color:#fff;}
 .ni.active{background:#1a3a6b;color:#ffd700;border-left-color:#ffd700;font-weight:700;}
-.content{flex:1;padding:14px;overflow-x:auto;}
+.content{flex:1;padding:14px;overflow-x:auto;min-width:0;}
 .panel{display:none;}.panel.active{display:block;}
 .ph{background:var(--hbg);color:#fff;padding:8px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;border-left:4px solid var(--ac);}
 .ph h2{font-size:13px;letter-spacing:1px;}
@@ -108,7 +108,7 @@ tfoot td{background:#1a1a0a;color:#fff;font-weight:700;border-top:2px solid var(
     <div id="loginErr">&#9888; Invalid username or password</div>
     <br>
     <button class="btn bpr blg" onclick="doLogin()">&#128275;&nbsp; LOGIN</button>
-    <div style="text-align:center;margin-top:10px;font-size:10px;color:#aaa">Default: admin / admin123</div>
+    <div id="loginDefaultHint" style="text-align:center;margin-top:10px;font-size:10px;color:#aaa"></div>
   </div>
 </div>
 
@@ -459,6 +459,11 @@ tfoot td{background:#1a1a0a;color:#fff;font-weight:700;border-top:2px solid var(
           <div class="fg"><label>USERNAME</label><input type="text" id="stUn"></div>
           <div class="fg"><label>NEW PASSWORD</label><input type="password" id="stPw" placeholder="Leave blank to keep"></div>
         </div>
+        <div style="background:#fff3cd;border:1px solid var(--ac);padding:7px 10px;margin-top:4px;font-size:11px;display:flex;align-items:center;gap:8px">
+          <span>Current password:</span>
+          <strong id="currPwdDisplay" style="font-family:var(--fn);letter-spacing:1px">&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;</strong>
+          <button class="btn bse bxs" onclick="toggleCurrPwdVisible()" id="togglePwdBtn">SHOW</button>
+        </div>
       </div>
       <div class="fsec"><div class="fst">NUMBER PREFIXES</div>
         <div class="fr">
@@ -769,9 +774,9 @@ const CATEGORIES=['Boarder','Dayboarder','One Time Dayboarder'];
    app under Data Backup → Google Apps Script Web App URL.
 
    Example:
-   const DEFAULT_GS_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
+   const DEFAULT_GS_URL = 'https://script.google.com/macros/s/AKfycbzdn1KYncL-XXf5OixG4PM-ndwGY5pfYDNzfQ_rjJfLp7EYWUR4LHbsbhkqz6iZ6nPGeQ/exec';
    ============================================================ */
-const DEFAULT_GS_URL = 'https://script.google.com/macros/s/AKfycbz_N23L3y6AoKVye5TCzsxGsMnWWj_iNqz1IBnp8tTq9OxFwGKGK3v07-EooEnybFgL/exec';
+const DEFAULT_GS_URL = 'https://script.google.com/macros/s/AKfycbzdn1KYncL-XXf5OixG4PM-ndwGY5pfYDNzfQ_rjJfLp7EYWUR4LHbsbhkqz6iZ6nPGeQ/exec';
 
 const BC={
   2075:[31,31,32,32,31,30,30,29,30,29,30,30],
@@ -797,7 +802,13 @@ const BC={
 const REF_AD=new Date(2024,3,13);
 const REF_BS={y:2081,m:1,d:1};
 function adToBS(ad){
-  const diff=Math.round((ad-REF_AD)/86400000);
+  // Strip time-of-day from BOTH dates before diffing. Without this, the exact
+  // hour/minute the page loads can push Math.round() up by a whole extra day
+  // once more than half the day has elapsed locally — that was the root cause
+  // of the date sometimes showing one day ahead (e.g. Ashar 8 instead of Ashar 7).
+  const adMid=new Date(ad.getFullYear(),ad.getMonth(),ad.getDate());
+  const refMid=new Date(REF_AD.getFullYear(),REF_AD.getMonth(),REF_AD.getDate());
+  const diff=Math.round((adMid-refMid)/86400000);
   let y=REF_BS.y,m=REF_BS.m,d=REF_BS.d;
   if(diff>=0){let r=diff;while(r>0){const md=(BC[y]||BC[2081])[m-1];const left=md-d+1;if(r<left){d+=r;r=0;}else{r-=left;d=1;m++;if(m>12){m=1;y++;}}}}
   else{let r=-diff;while(r>0){d--;r--;if(d<1){m--;if(m<1){m=12;y--;}d=(BC[y]||BC[2081])[m-1];}}}
@@ -834,21 +845,30 @@ function doLogin(){
   else{const e=document.getElementById('loginErr');e.style.display='block';setTimeout(()=>e.style.display='none',3000);}
 }
 document.getElementById('lPass').addEventListener('keypress',e=>{if(e.key==='Enter')doLogin();});
-function doLogout(){if(!confirm('Logout?'))return;stopLiveSync();document.getElementById('loginScreen').style.display='flex';document.getElementById('app').style.display='none';document.getElementById('lPass').value='';}
+function doLogout(){if(!confirm('Logout?'))return;stopLiveSync();if(_dateRefreshTimer){clearInterval(_dateRefreshTimer);_dateRefreshTimer=null;}refreshLoginHint();document.getElementById('loginScreen').style.display='flex';document.getElementById('app').style.display='none';document.getElementById('lPass').value='';}
 
 // =====================================================
 // INIT
 // =====================================================
-function initApp(){
+function refreshNepaliDateDisplay(){
   const b=adToBS(new Date());
   document.getElementById('topDate').textContent=`${b.d} ${NM[b.m-1]} ${b.y} BS`;
-  document.getElementById('dashDate').textContent=`Today: ${b.d} ${NM[b.m-1]} ${b.y} BS`;
+  const dd=document.getElementById('dashDate');
+  if(dd)dd.textContent=`Today: ${b.d} ${NM[b.m-1]} ${b.y} BS`;
+  return b;
+}
+let _dateRefreshTimer=null;
+function initApp(){
+  const b=refreshNepaliDateDisplay();
   applyCfg();fillDDs();renderDashboard();initLiveSyncUI();
   document.getElementById('bMon').value=String(b.m);
   document.getElementById('bYr').value=String(b.y);
   document.getElementById('rcpY').value=String(b.y);
   document.getElementById('rcpM').value=String(b.m);
   document.getElementById('rcpD').value=todayBS();
+  // Keep the displayed Nepali date accurate even across midnight / long sessions
+  if(_dateRefreshTimer)clearInterval(_dateRefreshTimer);
+  _dateRefreshTimer=setInterval(refreshNepaliDateDisplay,60000);
 }
 function applyCfg(){
   document.getElementById('appName').textContent=(D.cfg.logo?'':'🏫 ')+D.cfg.name;
@@ -866,8 +886,27 @@ function applyCfg(){
       badge.innerHTML='';
     }
   }
+  _pwdVisible=false;
+  renderCurrPwdDisplay();
   renderSubs();
   renderImagePreviews();
+}
+let _pwdVisible=false;
+function renderCurrPwdDisplay(){
+  const el=document.getElementById('currPwdDisplay');
+  const btn=document.getElementById('togglePwdBtn');
+  if(!el)return;
+  if(_pwdVisible){
+    el.textContent=D.cfg.pwd||'';
+    if(btn)btn.textContent='HIDE';
+  }else{
+    el.textContent='\u2022'.repeat((D.cfg.pwd||'').length||8);
+    if(btn)btn.textContent='SHOW';
+  }
+}
+function toggleCurrPwdVisible(){
+  _pwdVisible=!_pwdVisible;
+  renderCurrPwdDisplay();
 }
 
 // --- Logo & Signature image uploads (stored as base64 data URLs in localStorage) ---
@@ -1831,7 +1870,7 @@ async function testGS(){
   document.getElementById('gsTR').innerHTML='<div class="alert ainf">&#9203; Connecting and auto-creating sheet tabs...</div>';
 
   try{
-    const r = await fetch(url+'?action=ping', {method:'GET'});
+    const r = await fetch(`${url}?action=ping&_=${Date.now()}`, {method:'GET', cache:'no-store'});
     if(!r.ok){
       document.getElementById('gsTR').innerHTML=`<div class="alert aerr">
         &#9888; <strong>Server responded with HTTP ${r.status}.</strong><br>
@@ -1900,14 +1939,27 @@ async function pushToGS(){
   const url = D.cfg.gsUrl;
   if(!url) return false;
   try{
-    await fetch(url, {
-      method:'POST', mode:'no-cors',
-      body: buildPushPayload(),
-      headers:{'Content-Type':'application/json'}
+    // IMPORTANT: Google Apps Script Web Apps do not handle CORS preflight
+    // (OPTIONS) requests. Sending Content-Type: application/json makes the
+    // browser treat this as a "non-simple" request and send a preflight
+    // first, which Apps Script can't answer — the request then silently
+    // fails. Using text/plain avoids the preflight entirely (a "simple"
+    // request), and Apps Script's e.postData.contents still receives the
+    // raw JSON string fine since we parse it ourselves server-side.
+    const r = await fetch(url, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: buildPushPayload()
     });
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const j = await r.json().catch(()=>null);
+    if(j && j.status==='error') throw new Error(j.message||'Server rejected the data');
     _lastPushTs = Date.now();
     return true;
-  }catch(e){ return false; }
+  }catch(e){
+    console.warn('pushToGS failed:', e.message);
+    return false;
+  }
 }
 
 // --- PULL latest data ← Google Sheets ---
@@ -1922,7 +1974,11 @@ async function pullFromGS(manual=false){
     showSyncMsg('<div class="alert ainf">&#11015; Pulling latest data from Google Sheets...</div>');
   }
   try{
-    const r = await fetch(url + '?action=pull', {method:'GET'});
+    // Cache-bust with a timestamp param + no-store, otherwise the browser can keep
+    // returning a stale cached response for this exact GET URL indefinitely, which
+    // is the main reason live data can appear "stuck" even though sync is running.
+    const bust = Date.now();
+    const r = await fetch(`${url}?action=pull&_=${bust}`, {method:'GET', cache:'no-store'});
     if(!r.ok) throw new Error('HTTP '+r.status);
     const j = await r.json();
     if(j.status !== 'ok' || !j.data){
@@ -1939,7 +1995,7 @@ async function pullFromGS(manual=false){
       showSyncMsg('<div class="alert aok">&#10003; Live data pulled successfully from Google Sheets!</div>');
     }
   }catch(e){
-    if(manual) showSyncMsg(`<div class="alert aerr">&#9888; Pull failed: ${e.message}</div>`);
+    if(manual) showSyncMsg(`<div class="alert aerr">&#9888; Pull failed: ${e.message}<br><small>If this keeps failing, re-check your Web App URL and that it's deployed with "Anyone" access.</small></div>`);
     setSyncStatus('ERR','berr');
   }
 }
@@ -2139,8 +2195,23 @@ function toast(msg,tp='ok'){const el=document.getElementById('syncT');el.textCon
 // =====================================================
 // SEED DEMO DATA ON FIRST LOAD
 // =====================================================
-window.addEventListener('load',()=>{
+function refreshLoginHint(){
   document.getElementById('lsName').textContent=D.cfg.name;
+  // Dynamic login hint: always show the CURRENT username (since that's safe to show
+  // and helps avoid lockouts), but only reveal a password if it's still the untouched
+  // factory default — once an admin changes it, the hint disappears for security.
+  const hintEl=document.getElementById('loginDefaultHint');
+  if(hintEl){
+    const isFactoryPwd=(D.cfg.pwd==='admin123');
+    if(isFactoryPwd){
+      hintEl.textContent=`Default: ${D.cfg.uname||'admin'} / admin123`;
+    }else{
+      hintEl.textContent=`Username: ${D.cfg.uname||'admin'} (password has been changed)`;
+    }
+  }
+}
+window.addEventListener('load',()=>{
+  refreshLoginHint();
   if(D.cls.length===0){
     D.cls=[{id:'CLS1',n:'Class 1',s:'A',t:'Ram Prasad Sharma'},{id:'CLS2',n:'Class 2',s:'A',t:'Sita Devi Thapa'},{id:'CLS3',n:'Class 3',s:'B',t:'Hari Bahadur Gurung'}];
     D.feeH=[{id:'FH1',n:'Tuition Fee',tp:'Monthly',fq:'Regular'},{id:'FH2',n:'Exam Fee',tp:'Yearly',fq:'Regular'},{id:'FH3',n:'Computer Fee',tp:'Monthly',fq:'Regular'},{id:'FH4',n:'Library Fee',tp:'Yearly',fq:'Regular'},{id:'FH5',n:'Hostel/Boarding Fee',tp:'Monthly',fq:'Regular'}];
