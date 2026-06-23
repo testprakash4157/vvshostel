@@ -574,7 +574,11 @@ tfoot td{background:#1a1a0a;color:#fff;font-weight:700;border-top:2px solid var(
       </div>
       <input type="hidden" id="sIx" value="-1">
     </div>
-    <div class="mf"><button class="btn bok" onclick="saveStu()">SAVE STUDENT</button><button class="btn bse" onclick="closeM('mStu')">CANCEL</button></div>
+    <div class="mf">
+      <button class="btn bok" onclick="saveStu()">SAVE STUDENT</button>
+      <button class="btn bac" onclick="printAdmissionForm()">&#128424; PRINT ADMISSION FORM</button>
+      <button class="btn bse" onclick="closeM('mStu')">CANCEL</button>
+    </div>
   </div>
 </div>
 
@@ -774,7 +778,7 @@ const CATEGORIES=['Boarder','Dayboarder','One Time Dayboarder'];
    app under Data Backup → Google Apps Script Web App URL.
 
    Example:
-   const DEFAULT_GS_URL = 'https://script.google.com/macros/s/AKfycbzdn1KYncL-XXf5OixG4PM-ndwGY5pfYDNzfQ_rjJfLp7EYWUR4LHbsbhkqz6iZ6nPGeQ/exec';
+   const DEFAULT_GS_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
    ============================================================ */
 const DEFAULT_GS_URL = 'https://script.google.com/macros/s/AKfycbzdn1KYncL-XXf5OixG4PM-ndwGY5pfYDNzfQ_rjJfLp7EYWUR4LHbsbhkqz6iZ6nPGeQ/exec';
 
@@ -1034,10 +1038,146 @@ function saveStu(){
 function renderStudents(){
   const sr=(document.getElementById('stuSrch')?.value||'').toLowerCase(),cf=document.getElementById('stuFC')?.value||'',catf=document.getElementById('stuFCat')?.value||'',sf=document.getElementById('stuFS')?.value||'';
   const list=D.stu.filter(s=>(!sr||s.nm.toLowerCase().includes(sr)||s.id.toLowerCase().includes(sr))&&(!cf||s.ci===cf)&&(!catf||s.cat===catf)&&(!sf||s.st===sf));
-  document.getElementById('stuTbl').innerHTML=list.map((s,i)=>{const c=D.cls.find(x=>x.id===s.ci);return`<tr><td>${i+1}</td><td>${s.id}</td><td><strong>${s.nm}</strong></td><td>${c?c.n+(c.s?' '+c.s:''):'-'}</td><td><span class="badge binf">${s.cat||'-'}</span></td><td>${s.ro||'-'}</td><td>${s.ft||'-'}</td><td>${s.ph||'-'}</td><td>${(+s.opd||0)>0?`<span class="badge bwrn">Rs.${(+s.opd).toLocaleString()}</span>`:'-'}</td><td><span class="badge ${s.st==='Active'?'bok2':'berr'}">${s.st}</span></td><td><button class="btn bxs bse" onclick="editStu(${D.stu.indexOf(s)})">EDIT</button> <button class="btn bxs bdg" onclick="delStu(${D.stu.indexOf(s)})">DEL</button></td></tr>`;}).join('')||`<tr><td colspan="11" style="text-align:center;color:var(--mu);padding:12px">No students found</td></tr>`;
+  document.getElementById('stuTbl').innerHTML=list.map((s,i)=>{const c=D.cls.find(x=>x.id===s.ci);return`<tr><td>${i+1}</td><td>${s.id}</td><td><strong>${s.nm}</strong></td><td>${c?c.n+(c.s?' '+c.s:''):'-'}</td><td><span class="badge binf">${s.cat||'-'}</span></td><td>${s.ro||'-'}</td><td>${s.ft||'-'}</td><td>${s.ph||'-'}</td><td>${(+s.opd||0)>0?`<span class="badge bwrn">Rs.${(+s.opd).toLocaleString()}</span>`:'-'}</td><td><span class="badge ${s.st==='Active'?'bok2':'berr'}">${s.st}</span></td><td><button class="btn bxs bse" onclick="editStu(${D.stu.indexOf(s)})">EDIT</button> <button class="btn bxs bac" onclick="printAdmissionFormFor('${s.id}')">&#128424; FORM</button> <button class="btn bxs bdg" onclick="delStu(${D.stu.indexOf(s)})">DEL</button></td></tr>`;}).join('')||`<tr><td colspan="11" style="text-align:center;color:var(--mu);padding:12px">No students found</td></tr>`;
 }
 function editStu(ix){const s=D.stu[ix];document.getElementById('stuMT').textContent='EDIT STUDENT';document.getElementById('sIx').value=ix;document.getElementById('sId').value=s.id;document.getElementById('sFn').value=s.fn||s.nm.split(' ')[0];document.getElementById('sMn').value=s.mn||'';document.getElementById('sLn').value=s.ln||s.nm.split(' ').slice(-1)[0];document.getElementById('sRo').value=s.ro||'';document.getElementById('sCl').value=s.ci||'';document.getElementById('sCat').value=s.cat||'Dayboarder';document.getElementById('sDb').value=s.db||'';document.getElementById('sGn').value=s.gn||'Male';document.getElementById('sAd').value=s.ad||'';document.getElementById('sFt').value=s.ft||'';document.getElementById('sMt').value=s.mt||'';document.getElementById('sPh').value=s.ph||'';document.getElementById('sAr').value=s.ar||'';document.getElementById('sSt').value=s.st||'Active';document.getElementById('sRm').value=s.rm||'';document.getElementById('sOpd').value=s.opd||'';document.getElementById('sOpdYr').value=s.opdYr||'';document.getElementById('sOpdRm').value=s.opdRm||'';openM('mStu');}
 function delStu(ix){if(!confirm('Delete student?'))return;D.stu.splice(ix,1);sv('stu');renderStudents();renderDashboard();}
+
+// =====================================================
+// ADMITTED STUDENT FORM — full A4 portrait, all details
+// =====================================================
+function buildAdmissionForm(s){
+  const c=D.cls.find(x=>x.id===s.ci),sc=D.cfg;
+  const row=(label,value)=>`<tr><td style="padding:6px 10px;font-weight:700;color:#444;width:36%;border-bottom:1px solid #e0e0e0">${label}</td><td style="padding:6px 10px;font-weight:700;border-bottom:1px solid #e0e0e0">${value||'-'}</td></tr>`;
+  return`<div style="font-family:'Courier New',monospace;color:#111;background:#fff;font-weight:700;max-width:190mm;margin:0 auto">
+  <table style="width:100%;border-collapse:collapse;padding-bottom:10px;margin-bottom:14px;border-bottom:3px double #1a3a6b">
+    <tr>
+      <td style="width:70px;vertical-align:middle"><div style="width:64px;height:64px;border:2.5px solid #1a3a6b;display:flex;align-items:center;justify-content:center;font-size:28px;background:#eef1fb;overflow:hidden">${sc.logo?`<img src="${sc.logo}" style="width:100%;height:100%;object-fit:contain">`:'&#127979;'}</div></td>
+      <td style="padding-left:12px;vertical-align:middle">
+        <div style="font-size:21pt;font-weight:700;color:#1a3a6b;letter-spacing:.5px">${sc.name}</div>
+        <div style="font-size:11pt;color:#333">${sc.addr} | Tel: ${sc.phone}</div>
+        <div style="font-size:9.5pt;color:#666">Email: ${sc.email} | Reg: ${sc.reg} | PAN: ${sc.pan}</div>
+      </td>
+      <td style="text-align:center;vertical-align:middle;width:110px">
+        <div style="width:90px;height:105px;border:2px dashed #999;display:flex;align-items:center;justify-content:center;font-size:8.5pt;color:#888;margin:0 auto">PASSPORT<br>SIZE<br>PHOTO</div>
+      </td>
+    </tr>
+  </table>
+  <div style="text-align:center;font-size:15pt;font-weight:700;color:#fff;background:#1a3a6b;padding:6px;letter-spacing:2px;margin-bottom:14px">STUDENT ADMISSION FORM</div>
+
+  <table style="width:100%;border-collapse:collapse;margin-bottom:6px;border:1px solid #1a3a6b">
+    <tr style="background:#1a3a6b;color:#fff"><th colspan="2" style="padding:6px 10px;text-align:left;font-size:11.5pt">STUDENT INFORMATION</th></tr>
+    ${row('Full Name',s.nm)}
+    ${row('Student ID',s.id)}
+    ${row('Class',c?c.n+(c.s?' — Section '+c.s:''):'-')}
+    ${row('Category',s.cat)}
+    ${row('Roll No.',s.ro)}
+    ${row('Gender',s.gn)}
+    ${row('Date of Birth (BS)',s.db)}
+    ${row('Admission Date (BS)',s.ad)}
+    ${row('Current Status',s.st)}
+  </table>
+
+  <table style="width:100%;border-collapse:collapse;margin-bottom:6px;border:1px solid #1a3a6b">
+    <tr style="background:#1a3a6b;color:#fff"><th colspan="2" style="padding:6px 10px;text-align:left;font-size:11.5pt">FAMILY &amp; CONTACT DETAILS</th></tr>
+    ${row("Father's Name",s.ft)}
+    ${row("Mother's Name",s.mt)}
+    ${row('Phone Number',s.ph)}
+    ${row('Address',s.ar)}
+  </table>
+
+  ${(+s.opd||0)>0?`<table style="width:100%;border-collapse:collapse;margin-bottom:6px;border:1px solid #b8860b">
+    <tr style="background:#fff3cd"><th colspan="2" style="padding:6px 10px;text-align:left;font-size:11.5pt;color:#856404">PREVIOUS YEAR DUES (OPENING BALANCE)</th></tr>
+    ${row('Due Amount',`Rs. ${(+s.opd).toLocaleString()}`)}
+    ${row('Related Year (BS)',s.opdYr)}
+    ${row('Note',s.opdRm)}
+  </table>`:''}
+
+  ${s.rm?`<table style="width:100%;border-collapse:collapse;margin-bottom:6px;border:1px solid #1a3a6b">
+    <tr style="background:#1a3a6b;color:#fff"><th colspan="2" style="padding:6px 10px;text-align:left;font-size:11.5pt">REMARKS</th></tr>
+    <tr><td style="padding:8px 10px" colspan="2">${s.rm}</td></tr>
+  </table>`:''}
+
+  <div style="font-size:10pt;margin-top:16px;border-top:1px dashed #999;padding-top:8px">
+    I hereby declare that the above information is true and correct to the best of my knowledge. I agree to abide by the rules and regulations of the school.
+  </div>
+
+  <table style="width:100%;margin-top:36px;font-size:10.5pt">
+    <tr>
+      <td style="text-align:center;width:33%">_____________________<br>Parent / Guardian Signature</td>
+      <td style="text-align:center;width:34%">_____________________<br>Class Teacher</td>
+      <td style="text-align:center;width:33%">${sc.principalSig?`<img src="${sc.principalSig}" style="height:30px;object-fit:contain"><br>`:'_____________________<br>'}Principal</td>
+    </tr>
+  </table>
+  <div style="text-align:center;margin-top:14px;font-size:9pt;color:#666">Form printed on ${fmtBS(todayBS())} &nbsp;|&nbsp; ${sc.name}</div>
+  </div>`;
+}
+
+function printAdmissionForm(){
+  // Used from inside the Add/Edit Student modal — builds the form from whatever
+  // is currently filled in the form fields (works even before saving).
+  const s={
+    id:document.getElementById('sId').value,
+    nm:[document.getElementById('sFn').value.trim(),document.getElementById('sMn').value.trim(),document.getElementById('sLn').value.trim()].filter(Boolean).join(' '),
+    ro:document.getElementById('sRo').value,
+    ci:document.getElementById('sCl').value,
+    cat:document.getElementById('sCat').value,
+    db:document.getElementById('sDb').value,
+    gn:document.getElementById('sGn').value,
+    ad:document.getElementById('sAd').value,
+    ft:document.getElementById('sFt').value,
+    mt:document.getElementById('sMt').value,
+    ph:document.getElementById('sPh').value,
+    ar:document.getElementById('sAr').value,
+    st:document.getElementById('sSt').value,
+    rm:document.getElementById('sRm').value,
+    opd:document.getElementById('sOpd').value,
+    opdYr:document.getElementById('sOpdYr').value,
+    opdRm:document.getElementById('sOpdRm').value
+  };
+  if(!s.nm.trim()){toast('Enter at least the student name first','err');return;}
+  showA4PortraitPrint('ADMISSION FORM — '+s.nm, buildAdmissionForm(s));
+}
+
+function printAdmissionFormFor(si){
+  const s=D.stu.find(x=>x.id===si);
+  if(!s){toast('Student not found','err');return;}
+  showA4PortraitPrint('ADMISSION FORM — '+s.nm, buildAdmissionForm(s));
+}
+
+// --- Print a single full A4 portrait page (used for admission forms etc.) ---
+function showA4PortraitPrint(title,html){
+  const w=window.open('','_blank','width=900,height=1000,scrollbars=yes,resizable=yes');
+  if(!w){alert('Pop-up blocked! Please allow pop-ups for this page to enable printing.');return;}
+  w.document.open();
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{background:#666;}
+body{font-family:'Courier New',monospace;padding:8mm 0;}
+.a4-page{background:#fff;width:200mm;min-height:287mm;margin:0 auto;padding:12mm;box-sizing:border-box;box-shadow:0 2px 10px rgba(0,0,0,.3);}
+table{border-collapse:collapse;}
+.no-print{display:block;}
+@page{margin:6mm;size:A4 portrait;}
+@media print{
+  html,body{background:#fff;}
+  .no-print{display:none!important;}
+  body{padding:0;}
+  .a4-page{margin:0;box-shadow:none;width:100%;min-height:0;}
+}
+</style></head><body>
+<div class="no-print" style="position:fixed;top:0;left:0;right:0;background:#1a3a6b;color:#fff;padding:8px 16px;display:flex;justify-content:space-between;align-items:center;z-index:99">
+  <span style="font-weight:700;font-size:12pt">&#128424; ${title} <span style="font-size:9pt;opacity:.85">(A4 Portrait)</span></span>
+  <div style="display:flex;gap:8px">
+    <button onclick="window.print()" style="background:#b8860b;color:#fff;border:none;padding:6px 20px;cursor:pointer;font-weight:700;font-size:12px;font-family:monospace">PRINT</button>
+    <button onclick="window.close()" style="background:#555;color:#fff;border:none;padding:6px 14px;cursor:pointer;font-size:12px;font-family:monospace">CLOSE</button>
+  </div>
+</div>
+<div class="no-print" style="height:46px"></div>
+<div class="a4-page">${html}</div>
+</body></html>`);
+  w.document.close();w.focus();
+}
 function resetSF(){['stuSrch','stuFC','stuFCat','stuFS'].forEach(id=>document.getElementById(id).value='');renderStudents();}
 function importCSV(e){
   const f=e.target.files[0];if(!f)return;
@@ -2212,7 +2352,22 @@ function refreshLoginHint(){
 }
 window.addEventListener('load',()=>{
   refreshLoginHint();
-  if(D.cls.length===0){
+  const hasLiveUrl = !!D.cfg.gsUrl;
+  if(hasLiveUrl){
+    // A live Google Sheets URL is configured (baked into this file or saved
+    // previously in this browser). NEVER inject demo/example data in this case —
+    // doing so was the exact bug that made a second browser show only example
+    // students even though real data existed on the server. Instead, try to
+    // pull the real data immediately, before the user even logs in, so it's
+    // ready the moment they reach the dashboard. Live Sync is also force-enabled
+    // here, since a configured URL with sync left "off" served no purpose and
+    // was why second browsers never even attempted to connect.
+    D.cfg.liveSync = true;
+    sv('cfg');
+    pullFromGS(false);
+  } else if(D.cls.length===0){
+    // No live server configured at all — this is genuine first-time standalone
+    // use, so seed friendly example data to demonstrate the system.
     D.cls=[{id:'CLS1',n:'Class 1',s:'A',t:'Ram Prasad Sharma'},{id:'CLS2',n:'Class 2',s:'A',t:'Sita Devi Thapa'},{id:'CLS3',n:'Class 3',s:'B',t:'Hari Bahadur Gurung'}];
     D.feeH=[{id:'FH1',n:'Tuition Fee',tp:'Monthly',fq:'Regular'},{id:'FH2',n:'Exam Fee',tp:'Yearly',fq:'Regular'},{id:'FH3',n:'Computer Fee',tp:'Monthly',fq:'Regular'},{id:'FH4',n:'Library Fee',tp:'Yearly',fq:'Regular'},{id:'FH5',n:'Hostel/Boarding Fee',tp:'Monthly',fq:'Regular'}];
     // Category-wise fees: Boarders pay extra hostel/boarding fee on top of tuition; Dayboarders pay normal tuition;
