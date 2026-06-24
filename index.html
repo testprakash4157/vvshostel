@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>School Management System [SMS]</title>
+<title>School Management System</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cousine:wght@400;700&display=swap');
 :root{
@@ -144,6 +144,9 @@ tfoot td{background:#1a1a0a;color:#fff;font-weight:700;border-top:2px solid var(
         <button class="ni" onclick="nav('exams')">&#128221; Exam Management</button>
         <button class="ni" onclick="nav('marks')">&#9733; Marks Entry</button>
         <button class="ni" onclick="nav('results')">&#127941; Results</button>
+      </div>
+      <div class="sg"><div class="sgl">ACCOUNTS</div>
+        <button class="ni" onclick="nav('dailyAcc')">&#128176; Daily Income &amp; Expenses</button>
       </div>
       <div class="sg"><div class="sgl">REPORTS</div>
         <button class="ni" onclick="nav('reports')">&#128202; Reports</button>
@@ -345,6 +348,35 @@ tfoot td{background:#1a1a0a;color:#fff;font-weight:700;border-top:2px solid var(
     <div class="fg"><label>CLASS</label><select id="rCls" onchange="renderResults()"><option value="">-- Select Class --</option></select></div>
   </div>
   <div id="resDiv"></div>
+</div>
+
+<!-- DAILY INCOME & EXPENSES (standalone — separate from student cash receipts) -->
+<div id="p-dailyAcc" class="panel">
+  <div class="ph"><h2>&#128176; DAILY INCOME &amp; EXPENSES</h2>
+    <button class="btn bpr bsm" onclick="openDailyAccModal()">+ ADD ENTRY</button>
+  </div>
+
+  <div class="cg" id="daCards"></div>
+
+  <div class="fb">
+    <div class="fg"><label>TYPE</label>
+      <select id="daFType" onchange="renderDailyAcc()">
+        <option value="">All (Income + Expense)</option>
+        <option value="income">Income Only</option>
+        <option value="expense">Expense Only</option>
+      </select>
+    </div>
+    <div class="fg"><label>CATEGORY</label><select id="daFCat" onchange="renderDailyAcc()"><option value="">All Categories</option></select></div>
+    <div class="fg"><label>FROM DATE (BS)</label><input type="text" id="daFFrom" placeholder="2083-01-01" style="width:100px" onchange="renderDailyAcc()"></div>
+    <div class="fg"><label>TO DATE (BS)</label><input type="text" id="daFTo" placeholder="2083-12-30" style="width:100px" onchange="renderDailyAcc()"></div>
+    <button class="btn bse bsm" onclick="resetDailyAccFilter()">RESET</button>
+    <button class="btn bac bsm" onclick="printDailyAcc()">&#128424; PRINT</button>
+  </div>
+
+  <div class="tw"><table>
+    <thead><tr><th>#</th><th>Date (BS)</th><th>Type</th><th>Category</th><th>Description</th><th>Mode</th><th>Income (Rs.)</th><th>Expense (Rs.)</th><th>Action</th></tr></thead>
+    <tbody id="daTbl"></tbody>
+  </table></div>
 </div>
 
 <!-- REPORTS -->
@@ -745,6 +777,41 @@ tfoot td{background:#1a1a0a;color:#fff;font-weight:700;border-top:2px solid var(
   </div>
 </div>
 
+<div class="mo" id="mDailyAcc">
+  <div class="modal" style="min-width:min(440px,95vw)">
+    <div class="mh"><h3 id="daMT">ADD INCOME / EXPENSE ENTRY</h3><button class="mcl" onclick="closeM('mDailyAcc')">&#x2715;</button></div>
+    <div class="mc">
+      <div class="fr">
+        <div class="fg"><label>TYPE *</label>
+          <select id="daType" onchange="daUpdateCatList()">
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+        </div>
+        <div class="fg"><label>DATE (BS) *</label><input type="text" id="daDate" placeholder="2083-03-15"></div>
+      </div>
+      <div class="fr">
+        <div class="fg full"><label>CATEGORY *</label>
+          <input type="text" id="daCat" list="daCatSuggest" placeholder="e.g. Donation, Stationery, Electricity, Salary">
+          <datalist id="daCatSuggest"></datalist>
+        </div>
+      </div>
+      <div class="fr">
+        <div class="fg full"><label>DESCRIPTION</label><input type="text" id="daDesc" placeholder="Optional details / remarks"></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label>AMOUNT (Rs.) *</label><input type="number" id="daAmt" placeholder="0" min="0"></div>
+        <div class="fg"><label>PAYMENT MODE</label>
+          <select id="daMode"><option>Cash</option><option>Cheque</option><option>Online Transfer</option><option>Fonepay</option><option>eSewa</option><option>Bank Deposit</option></select>
+        </div>
+      </div>
+      <div class="fg full"><label>PAID/RECEIVED BY</label><input type="text" id="daBy" placeholder="Optional name"></div>
+      <input type="hidden" id="daIx" value="-1">
+    </div>
+    <div class="mf"><button class="btn bok" onclick="saveDailyAcc()">SAVE ENTRY</button><button class="btn bse" onclick="closeM('mDailyAcc')">CANCEL</button></div>
+  </div>
+</div>
+
 <div class="mo" id="ppModal">
   <div class="modal" style="min-width:min(760px,96vw)">
     <div class="mh"><h3 id="ppTit">&#128424; PRINT PREVIEW</h3><button class="mcl" onclick="closeM('ppModal')">&#x2715;</button></div>
@@ -780,7 +847,7 @@ const CATEGORIES=['Boarder','Dayboarder','One Time Dayboarder'];
    Example:
    const DEFAULT_GS_URL = 'https://script.google.com/macros/s/AKfycb.../exec';
    ============================================================ */
-const DEFAULT_GS_URL = 'https://script.google.com/macros/s/AKfycbzdn1KYncL-XXf5OixG4PM-ndwGY5pfYDNzfQ_rjJfLp7EYWUR4LHbsbhkqz6iZ6nPGeQ/exec';
+const DEFAULT_GS_URL = 'https://script.google.com/macros/s/AKfycbwsgr1yJQU4NfMmjasC1Nb-Pj8Y3gtwx2UdHEmQ39yr09-qhBOZMG91VAEueXH8SkSnpQ/exec';
 
 const BC={
   2075:[31,31,32,32,31,30,30,29,30,29,30,30],
@@ -829,7 +896,7 @@ function n2w(n){const a=['','One','Two','Three','Four','Five','Six','Seven','Eig
 const LS={g(k){try{return JSON.parse(localStorage.getItem('sms3_'+k))||null;}catch{return null;}},s(k,v){localStorage.setItem('sms3_'+k,JSON.stringify(v));}};
 const D={
   cfg:LS.g('cfg')||{name:'Vidhya Vikash Secondary Boarding School',addr:'Kathmandu, Bagmati Province, Nepal',dist:'Kathmandu',prov:'Bagmati Province',phone:'01-4XXXXXX',email:'info@school.edu.np',reg:'REG-2045/001',pan:'123456789',principal:'',year:2081,uname:'admin',pwd:'admin123',rcpPfx:'RCP',billPfx:'BILL',stuPfx:'STU',gsUrl:DEFAULT_GS_URL,liveSync:!!DEFAULT_GS_URL},
-  stu:LS.g('stu')||[],cls:LS.g('cls')||[],feeH:LS.g('feeH')||[],cFees:LS.g('cFees')||[],adjs:LS.g('adjs')||[],bills:LS.g('bills')||[],rcps:LS.g('rcps')||[],exams:LS.g('exams')||[],marks:LS.g('marks')||[],bkLog:LS.g('bkLog')||[],billOv:LS.g('billOv')||[],extras:LS.g('extras')||[],ledCharges:LS.g('ledCharges')||[],subs:LS.g('subs')||['Nepali','English','Mathematics','Science','Social Studies','Computer']
+  stu:LS.g('stu')||[],cls:LS.g('cls')||[],feeH:LS.g('feeH')||[],cFees:LS.g('cFees')||[],adjs:LS.g('adjs')||[],bills:LS.g('bills')||[],rcps:LS.g('rcps')||[],exams:LS.g('exams')||[],marks:LS.g('marks')||[],bkLog:LS.g('bkLog')||[],billOv:LS.g('billOv')||[],extras:LS.g('extras')||[],ledCharges:LS.g('ledCharges')||[],dailyAcc:LS.g('dailyAcc')||[],subs:LS.g('subs')||['Nepali','English','Mathematics','Science','Social Studies','Computer']
 };
 // Migration: if this browser already had a saved config (from before a baked-in URL was
 // set in this file) and it has no Google Sheets URL yet, apply the baked-in default so
@@ -961,7 +1028,7 @@ function nav(nm){
   const b=Array.from(document.querySelectorAll('.ni')).find(x=>x.getAttribute('onclick')?.includes("'"+nm+"'"));
   if(b)b.classList.add('active');
   fillDDs();
-  const r={dashboard:renderDashboard,students:renderStudents,classes:renderCls,feeH:renderFH,clsFees:renderCF,feeAdj:renderAdj,billing:renderBills,receipts:renderRcps,exams:renderExams,backup:()=>{renderBkLog();initLiveSyncUI();},setup:applyCfg};
+  const r={dashboard:renderDashboard,students:renderStudents,classes:renderCls,feeH:renderFH,clsFees:renderCF,feeAdj:renderAdj,billing:renderBills,receipts:renderRcps,exams:renderExams,dailyAcc:renderDailyAcc,backup:()=>{renderBkLog();initLiveSyncUI();},setup:applyCfg};
   if(r[nm])r[nm]();
 }
 function stab(g,t){
@@ -1746,6 +1813,185 @@ function editExam(ix){const e=D.exams[ix];document.getElementById('exIx').value=
 function delExam(ix){if(!confirm('Delete?'))return;D.exams.splice(ix,1);sv('exams');renderExams();fillDDs();}
 
 // =====================================================
+// DAILY INCOME & EXPENSES — fully standalone module.
+// This is intentionally NOT linked to D.rcps (student cash
+// receipts) or any student/fee data anywhere — it is the
+// school's general day-to-day cash book (donations, salaries,
+// stationery, electricity, repairs, etc.), tracked completely
+// separately from student fee collection.
+// =====================================================
+let _daEditIx=-1;
+const DA_DEFAULT_INCOME_CATS=['Donation','Government Grant','Rent Income','Canteen Income','Other Income'];
+const DA_DEFAULT_EXPENSE_CATS=['Salary','Stationery','Electricity','Water','Repair & Maintenance','Transport','Furniture','Cleaning','Internet/Phone','Miscellaneous'];
+
+function openDailyAccModal(){
+  _daEditIx=-1;
+  document.getElementById('daMT').textContent='ADD INCOME / EXPENSE ENTRY';
+  document.getElementById('daType').value='income';
+  document.getElementById('daCat').value='';
+  document.getElementById('daDesc').value='';
+  document.getElementById('daAmt').value='';
+  document.getElementById('daMode').value='Cash';
+  document.getElementById('daBy').value='';
+  document.getElementById('daDate').value=todayBS();
+  document.getElementById('daIx').value=-1;
+  daUpdateCatList();
+  openM('mDailyAcc');
+}
+function daUpdateCatList(){
+  const type=document.getElementById('daType').value;
+  const used=[...new Set(D.dailyAcc.filter(x=>x.tp===type).map(x=>x.cat))];
+  const defaults=type==='income'?DA_DEFAULT_INCOME_CATS:DA_DEFAULT_EXPENSE_CATS;
+  const all=[...new Set([...defaults,...used])];
+  document.getElementById('daCatSuggest').innerHTML=all.map(c=>`<option value="${c}">`).join('');
+}
+function saveDailyAcc(){
+  const tp=document.getElementById('daType').value;
+  const dt=document.getElementById('daDate').value.trim();
+  const cat=document.getElementById('daCat').value.trim();
+  const amt=parseFloat(document.getElementById('daAmt').value);
+  if(!dt){toast('Enter a date','err');return;}
+  if(!cat){toast('Enter a category','err');return;}
+  if(isNaN(amt)||amt<=0){toast('Enter a valid amount','err');return;}
+  const ix=parseInt(document.getElementById('daIx').value);
+  const entry={
+    id:ix>=0?D.dailyAcc[ix].id:'DA'+Date.now()+Math.random().toString(36).slice(2,5),
+    tp, dt, cat,
+    desc:document.getElementById('daDesc').value.trim(),
+    amt,
+    md:document.getElementById('daMode').value,
+    by:document.getElementById('daBy').value.trim()
+  };
+  if(ix>=0)D.dailyAcc[ix]=entry; else D.dailyAcc.push(entry);
+  sv('dailyAcc');
+  closeM('mDailyAcc');
+  renderDailyAcc();
+  toast(`${tp==='income'?'Income':'Expense'} entry saved`);
+}
+function editDailyAcc(id){
+  const ix=D.dailyAcc.findIndex(x=>x.id===id);if(ix<0)return;
+  const e=D.dailyAcc[ix];
+  _daEditIx=ix;
+  document.getElementById('daMT').textContent='EDIT ENTRY';
+  document.getElementById('daType').value=e.tp;
+  document.getElementById('daDate').value=e.dt;
+  document.getElementById('daCat').value=e.cat;
+  document.getElementById('daDesc').value=e.desc||'';
+  document.getElementById('daAmt').value=e.amt;
+  document.getElementById('daMode').value=e.md||'Cash';
+  document.getElementById('daBy').value=e.by||'';
+  document.getElementById('daIx').value=ix;
+  daUpdateCatList();
+  openM('mDailyAcc');
+}
+function delDailyAcc(id){
+  if(!confirm('Delete this entry?'))return;
+  D.dailyAcc=D.dailyAcc.filter(x=>x.id!==id);
+  sv('dailyAcc');
+  renderDailyAcc();
+}
+function daFilteredList(){
+  const type=document.getElementById('daFType')?.value||'';
+  const cat=document.getElementById('daFCat')?.value||'';
+  const from=document.getElementById('daFFrom')?.value.trim()||'';
+  const to=document.getElementById('daFTo')?.value.trim()||'';
+  return D.dailyAcc.filter(x=>{
+    if(type&&x.tp!==type)return false;
+    if(cat&&x.cat!==cat)return false;
+    if(from&&x.dt<from)return false;
+    if(to&&x.dt>to)return false;
+    return true;
+  }).sort((a,b)=>a.dt.localeCompare(b.dt));
+}
+function daPopulateCatFilter(){
+  const sel=document.getElementById('daFCat');
+  if(!sel)return;
+  const v=sel.value;
+  const cats=[...new Set(D.dailyAcc.map(x=>x.cat))].sort();
+  sel.innerHTML='<option value="">All Categories</option>'+cats.map(c=>`<option value="${c}">${c}</option>`).join('');
+  sel.value=v;
+}
+function resetDailyAccFilter(){
+  ['daFType','daFCat','daFFrom','daFTo'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  renderDailyAcc();
+}
+function renderDailyAcc(){
+  daPopulateCatFilter();
+  const list=daFilteredList();
+  const totIncome=list.filter(x=>x.tp==='income').reduce((a,x)=>a+(+x.amt||0),0);
+  const totExpense=list.filter(x=>x.tp==='expense').reduce((a,x)=>a+(+x.amt||0),0);
+  const net=totIncome-totExpense;
+  document.getElementById('daCards').innerHTML=`
+    <div class="card"><div class="cl">TOTAL INCOME</div><div class="cv" style="color:var(--ok)">Rs.${totIncome.toLocaleString()}</div></div>
+    <div class="card"><div class="cl">TOTAL EXPENSE</div><div class="cv" style="color:var(--dg)">Rs.${totExpense.toLocaleString()}</div></div>
+    <div class="card"><div class="cl">NET BALANCE</div><div class="cv" style="color:${net>=0?'var(--ok)':'var(--dg)'}">Rs.${net.toLocaleString()}</div></div>
+  `;
+  document.getElementById('daTbl').innerHTML=list.map((x,i)=>`
+    <tr>
+      <td>${i+1}</td><td>${fmtBS(x.dt)}</td>
+      <td><span class="badge ${x.tp==='income'?'bok2':'berr'}">${x.tp==='income'?'INCOME':'EXPENSE'}</span></td>
+      <td>${x.cat}</td>
+      <td>${x.desc||'-'}${x.by?` <span style="font-size:9px;color:var(--mu)">(by ${x.by})</span>`:''}</td>
+      <td>${x.md||'-'}</td>
+      <td style="color:var(--ok)">${x.tp==='income'?'Rs.'+(+x.amt).toLocaleString():''}</td>
+      <td style="color:var(--dg)">${x.tp==='expense'?'Rs.'+(+x.amt).toLocaleString():''}</td>
+      <td><button class="btn bxs bse" onclick="editDailyAcc('${x.id}')">EDIT</button> <button class="btn bxs bdg" onclick="delDailyAcc('${x.id}')">DEL</button></td>
+    </tr>`).join('')||`<tr><td colspan="9" style="text-align:center;color:var(--mu);padding:12px">No entries found</td></tr>`;
+}
+function printDailyAcc(){
+  const list=daFilteredList();
+  const sc=D.cfg;
+  const type=document.getElementById('daFType')?.value||'';
+  const cat=document.getElementById('daFCat')?.value||'';
+  const from=document.getElementById('daFFrom')?.value.trim()||'';
+  const to=document.getElementById('daFTo')?.value.trim()||'';
+  const totIncome=list.filter(x=>x.tp==='income').reduce((a,x)=>a+(+x.amt||0),0);
+  const totExpense=list.filter(x=>x.tp==='expense').reduce((a,x)=>a+(+x.amt||0),0);
+  const net=totIncome-totExpense;
+  const filterParts=[];
+  if(type)filterParts.push('Type: '+(type==='income'?'Income Only':'Expense Only'));
+  if(cat)filterParts.push('Category: '+cat);
+  if(from)filterParts.push('From: '+fmtBS(from));
+  if(to)filterParts.push('To: '+fmtBS(to));
+  const filterLabel=filterParts.length?filterParts.join(' | '):'All Entries';
+  const rows=list.map((x,i)=>`<tr style="background:${i%2===0?'#f5f5dc':'#fff'}">
+    <td style="padding:4px 8px;border-bottom:1px solid #ddd">${i+1}</td>
+    <td style="padding:4px 8px;border-bottom:1px solid #ddd">${fmtBS(x.dt)}</td>
+    <td style="padding:4px 8px;border-bottom:1px solid #ddd">${x.tp==='income'?'Income':'Expense'}</td>
+    <td style="padding:4px 8px;border-bottom:1px solid #ddd">${x.cat}</td>
+    <td style="padding:4px 8px;border-bottom:1px solid #ddd">${x.desc||'-'}</td>
+    <td style="padding:4px 8px;border-bottom:1px solid #ddd">${x.md||'-'}</td>
+    <td style="padding:4px 8px;border-bottom:1px solid #ddd;text-align:right">${x.tp==='income'?'Rs.'+(+x.amt).toLocaleString():''}</td>
+    <td style="padding:4px 8px;border-bottom:1px solid #ddd;text-align:right">${x.tp==='expense'?'Rs.'+(+x.amt).toLocaleString():''}</td>
+  </tr>`).join('');
+  const html=`<div style="font-family:'Courier New',monospace;font-size:11pt">
+    <div style="text-align:center;margin-bottom:14px">
+      <div style="font-size:18pt;font-weight:700;color:#1a3a6b">${sc.name}</div>
+      <div style="font-size:10pt;color:#444">${sc.addr} | Tel: ${sc.phone}</div>
+      <div style="font-size:14pt;font-weight:700;margin-top:8px;border-top:2px solid #1a3a6b;border-bottom:2px solid #1a3a6b;padding:4px">DAILY INCOME &amp; EXPENSES REPORT</div>
+      <div style="font-size:9.5pt;color:#666;margin-top:4px">${filterLabel}</div>
+      <div style="font-size:9pt;color:#888">Printed: ${fmtBS(todayBS())}</div>
+    </div>
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr style="background:#1a3a6b;color:#fff">${['#','Date (BS)','Type','Category','Description','Mode','Income (Rs.)','Expense (Rs.)'].map(h=>`<th style="padding:5px 8px;text-align:left">${h}</th>`).join('')}</tr></thead>
+      <tbody>${rows||'<tr><td colspan="8" style="padding:10px;text-align:center;color:#888">No entries</td></tr>'}</tbody>
+      <tfoot>
+        <tr style="background:#222;color:#fff;font-weight:700">
+          <td colspan="6" style="padding:6px 8px">TOTAL</td>
+          <td style="padding:6px 8px;text-align:right">Rs.${totIncome.toLocaleString()}</td>
+          <td style="padding:6px 8px;text-align:right">Rs.${totExpense.toLocaleString()}</td>
+        </tr>
+        <tr style="background:${net>=0?'#d4edda':'#fde'}">
+          <td colspan="6" style="padding:6px 8px;font-weight:700;color:${net>=0?'#155724':'#6b0000'}">NET BALANCE</td>
+          <td colspan="2" style="padding:6px 8px;text-align:right;font-weight:700;color:${net>=0?'#155724':'#6b0000'}">Rs.${net.toLocaleString()}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>`;
+  showPP('DAILY INCOME & EXPENSES REPORT',html);
+}
+
+// =====================================================
 // MARKS
 // =====================================================
 function loadMrkTbl(){
@@ -2064,7 +2310,7 @@ function buildPushPayload(){
       stu:D.stu, cls:D.cls, feeH:D.feeH, cFees:D.cFees,
       bills:D.bills, rcps:D.rcps, exams:D.exams, marks:D.marks,
       adjs:D.adjs, subs:D.subs, ledCharges:D.ledCharges,
-      billOv:D.billOv, extras:D.extras, cfg:{
+      billOv:D.billOv, extras:D.extras, dailyAcc:D.dailyAcc, cfg:{
         name:D.cfg.name, addr:D.cfg.addr, dist:D.cfg.dist,
         prov:D.cfg.prov, phone:D.cfg.phone, email:D.cfg.email,
         reg:D.cfg.reg, pan:D.cfg.pan, principal:D.cfg.principal,
@@ -2107,7 +2353,7 @@ async function pullFromGS(manual=false){
   const url = D.cfg.gsUrl;
   if(!url){
     if(manual) toast('No Google Sheets URL set','err');
-    return;
+    return false;
   }
   if(manual){
     setSyncStatus('PULLING...','binf');
@@ -2123,7 +2369,7 @@ async function pullFromGS(manual=false){
     const j = await r.json();
     if(j.status !== 'ok' || !j.data){
       if(manual) showSyncMsg('<div class="alert aerr">No data returned from sheet yet. Push data first.</div>');
-      return;
+      return false;
     }
     mergePulledData(j.data);
     const now = new Date();
@@ -2134,15 +2380,17 @@ async function pullFromGS(manual=false){
       setSyncStatus('ON','bok2');
       showSyncMsg('<div class="alert aok">&#10003; Live data pulled successfully from Google Sheets!</div>');
     }
+    return true;
   }catch(e){
     if(manual) showSyncMsg(`<div class="alert aerr">&#9888; Pull failed: ${e.message}<br><small>If this keeps failing, re-check your Web App URL and that it's deployed with "Anyone" access.</small></div>`);
     setSyncStatus('ERR','berr');
+    return false;
   }
 }
 
 // --- MERGE pulled data into local D, refresh all active panels ---
 function mergePulledData(remote){
-  const keys = ['stu','cls','feeH','cFees','bills','rcps','exams','marks','adjs','subs','ledCharges','billOv','extras'];
+  const keys = ['stu','cls','feeH','cFees','bills','rcps','exams','marks','adjs','subs','ledCharges','billOv','extras','dailyAcc'];
   let changed = false;
   keys.forEach(k=>{
     if(!remote[k]) return;
@@ -2201,8 +2449,9 @@ async function syncCycle(){
   _isSyncing = true;
   setSyncStatus('SYNCING...','binf');
   const pushed = await pushToGS();
-  await pullFromGS(false);
-  if(pushed) setSyncStatus('LIVE','bok2');
+  const pulled = await pullFromGS(false);
+  if(pushed || pulled) setSyncStatus('LIVE','bok2');
+  else setSyncStatus('ERR','berr');
   _isSyncing = false;
 }
 
@@ -2306,7 +2555,7 @@ function restoreJSON(e){
     try{
       const res=JSON.parse(ev.target.result);
       if(!confirm('Restore will OVERWRITE all current data. Continue?'))return;
-      ['stu','cls','feeH','cFees','bills','rcps','exams','marks','adjs','cfg','subs','ledCharges','billOv','extras'].forEach(k=>{
+      ['stu','cls','feeH','cFees','bills','rcps','exams','marks','adjs','cfg','subs','ledCharges','billOv','extras','dailyAcc'].forEach(k=>{
         if(res[k]){D[k]=res[k];sv(k);}
       });
       applyCfg();renderDashboard();fillDDs();
